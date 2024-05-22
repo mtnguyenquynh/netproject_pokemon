@@ -2,6 +2,7 @@
     {
         "index": "1",
         "name": "Bulbasaur",
+        "exp": 64,
         "hp": 45,
         "attack": 49,
         "defense": 49,
@@ -20,6 +21,7 @@
     {
         "index": "2",
         "name": "Ivysaur",
+        "exp": 142,
         "hp": 60,
         "attack": 62,
         "defense": 63,
@@ -38,6 +40,7 @@
     {
         "index": "3",
         "name": "Venusaur",
+        "exp": 263,
         "hp": 80,
         "attack": 82,
         "defense": 83,
@@ -56,6 +59,7 @@
     {
         "index": "4",
         "name": "Charmander",
+        "exp": 62,
         "hp": 39,
         "attack": 52,
         "defense": 43,
@@ -73,6 +77,7 @@
     {
         "index": "5",
         "name": "Charmeleon",
+        "exp": 142,
         "hp": 58,
         "attack": 64,
         "defense": 58,
