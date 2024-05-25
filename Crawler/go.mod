@@ -1,4 +1,4 @@
-module Pokemon
+module crawler
 
 go 1.22.1
 

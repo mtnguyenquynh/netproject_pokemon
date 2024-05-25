@@ -310,7 +310,7 @@ func FetchPokemonData(ctx context.Context) ([]Pokemon, error) {
 
 	var pokemons []Pokemon
 	doc.Find("#monsters-list li").Each(func(i int, s *goquery.Selection) {
-		if i >= 5 { // Limit to the first 5 Pokémon
+		if i >= 10 { // Limit to the first 5 Pokémon
 			return
 		}
 
