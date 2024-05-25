@@ -9,22 +9,21 @@ import (
 
 // Pokemon struct to hold all necessary attributes
 type Pokemon struct {
-	Index      int
-	Name       string
-	Level      int
-	Experience int
-	HP         int
-	Attack     int
-	Defense    int
-	SpAttack   int
-	SpDefense  int
-	Speed      int
-	TotalEVs   int
-	Type       []string
-	Description string
-	Height     string
-	Weight     string
-	EV         float64
+	Index       string   `json:"index"`
+	Name        string   `json:"name"`
+	Level       int      `json:"level"`
+	Experience  int      `json:"experience"`
+	HP          int      `json:"hp"`
+	Attack      int      `json:"attack"`
+	Defense     int      `json:"defense"`
+	SpAttack    int      `json:"sp_attack"`
+	SpDefense   int      `json:"sp_defense"`
+	Speed       int      `json:"speed"`
+	TotalEVs    int      `json:"total_evs"`
+	Type        []string `json:"type"`
+	Description string   `json:"description"`
+	Height      string   `json:"height"`
+	Weight      string   `json:"weight"`
 }
 
 // Calculate the required experience for the next level
@@ -36,14 +35,13 @@ func calculateNextLevelExp(level int) int {
 func levelUp(p *Pokemon) {
 	for p.Experience >= calculateNextLevelExp(p.Level) {
 		p.Level++
-		ev := p.EV
 
 		// Recalculate attributes
-		p.HP = int(float64(p.HP) * (1 + ev))
-		p.Attack = int(float64(p.Attack) * (1 + ev))
-		p.Defense = int(float64(p.Defense) * (1 + ev))
-		p.SpAttack = int(float64(p.SpAttack) * (1 + ev))
-		p.SpDefense = int(float64(p.SpDefense) * (1 + ev))
+		p.HP = int(float64(p.HP) * 1.1)
+		p.Attack = int(float64(p.Attack) * 1.1)
+		p.Defense = int(float64(p.Defense) * 1.1)
+		p.SpAttack = int(float64(p.SpAttack) * 1.1)
+		p.SpDefense = int(float64(p.SpDefense) * 1.1)
 		p.TotalEVs = p.HP + p.Attack + p.Defense + p.SpAttack + p.SpDefense + p.Speed
 
 		fmt.Printf("%s leveled up to %d!\n", p.Name, p.Level)
@@ -101,20 +99,29 @@ func battle(pokemon1, pokemon2 *Pokemon) (*Pokemon, *Pokemon) {
 	}
 
 	for first.HP > 0 && second.HP > 0 {
-		attackType := randomChoice([]string{"normal", "special"})
-		dmg := calculateDamage(first, second, attackType)
+		// Player's turn to choose attack type
+		var playerAttackType string
+		fmt.Println("Choose your attack type: normal or special")
+		fmt.Scan(&playerAttackType)
+
+		// Calculate and apply damage
+		dmg := calculateDamage(first, second, playerAttackType)
 		second.HP -= dmg
-		fmt.Printf("%s attacked %s with %s attack dealing %d damage.\n", first.Name, second.Name, attackType, dmg)
+		fmt.Printf("%s attacked %s with %s attack dealing %d damage.\n", first.Name, second.Name, playerAttackType, dmg)
 
 		if second.HP <= 0 {
 			fmt.Printf("%s fainted.\n", second.Name)
 			break
 		}
 
-		attackType = randomChoice([]string{"normal", "special"})
-		dmg = calculateDamage(second, first, attackType)
+		// Machine's turn to choose attack type randomly
+		machineAttackTypes := []string{"normal", "special"}
+		machineAttackType := machineAttackTypes[rand.Intn(len(machineAttackTypes))]
+
+		// Calculate and apply damage
+		dmg = calculateDamage(second, first, machineAttackType)
 		first.HP -= dmg
-		fmt.Printf("%s attacked %s with %s attack dealing %d damage.\n", second.Name, first.Name, attackType, dmg)
+		fmt.Printf("%s attacked %s with %s attack dealing %d damage.\n", second.Name, first.Name, machineAttackType, dmg)
 
 		if first.HP <= 0 {
 			fmt.Printf("%s fainted.\n", first.Name)
@@ -132,16 +139,12 @@ func battle(pokemon1, pokemon2 *Pokemon) (*Pokemon, *Pokemon) {
 	return winner, loser
 }
 
-// Helper function to choose a random element from a slice of strings
-func randomChoice(choices []string) string {
-	rand.Seed(time.Now().UnixNano())
-	return choices[rand.Intn(len(choices))]
-}
-
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	// Example Pokemon
 	bulbasaur := &Pokemon{
-		Index:       1,
+		Index:       "001",
 		Name:        "Bulbasaur",
 		Level:       5,
 		Experience:  2000,
@@ -156,11 +159,10 @@ func main() {
 		Description: "For some time after its birth, it grows by gaining nourishment from the seed on its back.",
 		Height:      "0.7 m",
 		Weight:      "6.9 kg",
-		EV:          0.5,
 	}
 
 	charmander := &Pokemon{
-		Index:       4,
+		Index:       "004",
 		Name:        "Charmander",
 		Level:       5,
 		Experience:  500,
@@ -175,11 +177,10 @@ func main() {
 		Description: "The fire on the tip of its tail is a measure of its life. If healthy, its tail burns intensely.",
 		Height:      "0.6 m",
 		Weight:      "8.5 kg",
-		EV:          0.5,
 	}
 
 	squirtle := &Pokemon{
-		Index:       7,
+		Index:       "007",
 		Name:        "Squirtle",
 		Level:       5,
 		Experience:  500,
@@ -194,14 +195,34 @@ func main() {
 		Description: "It shelters itself in its shell then strikes back with spouts of water at every opportunity.",
 		Height:      "0.5 m",
 		Weight:      "9 kg",
-		EV:          0.5,
 	}
 
-	// Level up Bulbasaur
-	levelUp(bulbasaur)
-	fmt.Printf("%+v\n", bulbasaur)
+	// Get player choices
+	var playerPokemon *Pokemon
+	fmt.Println("Choose your Pokemon: 1 for Bulbasaur, 2 for Charmander, 3 for Squirtle")
+	var choice int
+	fmt.Scan(&choice)
 
-	// Battle between Charmander and Squirtle
-	winner, loser := battle(charmander, squirtle)
+	switch choice {
+	case 1:
+		playerPokemon = bulbasaur
+	case 2:
+		playerPokemon = charmander
+	case 3:
+		playerPokemon = squirtle
+	default:
+		fmt.Println("Invalid choice")
+		return
+	}
+
+	// Machine (random) choice for Pokemon
+	machineChoices := []*Pokemon{bulbasaur, charmander, squirtle}
+	machinePokemon := machineChoices[rand.Intn(len(machineChoices))]
+
+	fmt.Printf("You chose %s.\n", playerPokemon.Name)
+	fmt.Printf("Machine chose %s.\n", machinePokemon.Name)
+
+	// Battle between player and machine
+	winner, loser := battle(playerPokemon, machinePokemon)
 	fmt.Printf("Winner: %+v\nLoser: %+v\n", winner, loser)
 }
