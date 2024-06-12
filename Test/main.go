@@ -27,7 +27,6 @@ import (
 type Pokemon struct {
 	Index       string       `json:"index"`
 	Name        string       `json:"name"`
-	Exp         int          `json:"exp"`
 	HP          int          `json:"hp"`
 	Attack      int          `json:"attack"`
 	Defense     int          `json:"defense"`
@@ -40,11 +39,21 @@ type Pokemon struct {
 	Height      string       `json:"height"`
 	Weight      string       `json:"weight"`
 	ImageURL    string       `json:"image_url"`
-	Level       int          `json:"level"`
-	AccumExp    int          `json:"accum_exp"`
-	Deployable  bool         `json:"deployable"`
+	Exp         int          `json:"exp"`
+	Moves       []Move       `json:"moves"`
 	Texture     rl.Texture2D `json:"-"`
 	Position    rl.Vector2   `json:"-"`
+}
+
+// Move represents the structure of a move.
+type Move struct {
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+	AtkType     string  `json:"atk_type"`
+	Power       int     `json:"power"`
+	Accuracy    float64 `json:"accuracy"`
+	PP          float64 `json:"pp"`
+	Description string  `json:"description"`
 }
 
 type Player struct {
@@ -128,7 +137,7 @@ var (
 	playerSpeed float32 = 3
 
 	pokemons []*Pokemon
-	player Player
+	player   Player
 
 	musicPaused bool
 	music       rl.Music
@@ -302,18 +311,18 @@ func update() {
 		playerDest = newPlayerDest
 	}
 
-    for i, pokemon := range pokemons {
-        if pokemon == nil {
-            continue
-        }
+	for i, pokemon := range pokemons {
+		if pokemon == nil {
+			continue
+		}
 
-        if rl.CheckCollisionRecs(playerDest, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16)) {
-            player.PokemonList = append(player.PokemonList, *pokemon)
-            pokemons[i] = nil
+		if rl.CheckCollisionRecs(playerDest, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16)) {
+			player.PokemonList = append(player.PokemonList, *pokemon)
+			pokemons[i] = nil
 			fmt.Println(player)
 			savePlayer(player)
-        }
-    }
+		}
+	}
 
 	frameCount++
 	if playerFrame > 3 {
@@ -405,7 +414,6 @@ func init() {
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(60)
 
-
 	// fmt.Print("Enter your name: ")
 	// var playerName string
 	// fmt.Scanln(&playerName)
@@ -442,43 +450,6 @@ func init() {
 	loadMap("three.map")
 
 	spawnPokemonsOnMap()
-
-
-
-	squirtleTexture, err := downloadTexture("https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png")
-	if err != nil {
-		fmt.Println("Error loading squirtle texture:", err)
-		os.Exit(1)
-	}
-	// Create a new Pokémon object for Squirtle
-	squirtle := &Pokemon{
-		Index:       "7",
-		Name:        "Squirtle",
-		Exp:         63,
-		HP:          44,
-		Attack:      48,
-		Defense:     65,
-		SpAttack:    50,
-		SpDefense:   64,
-		Speed:       43,
-		TotalEVs:    314,
-		Type:        []string{"water"},
-		Description: "It shelters itself in its shell then strikes back with spouts of water at every opportunity.",
-		Height:      "0.5 m",
-		Weight:      "9 kg",
-		ImageURL:    "https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png",
-		Level:       0,
-		AccumExp:    0,
-		Deployable:  false,
-		Texture:     squirtleTexture,
-	}
-
-	// Spawn Squirtle at a valid position
-	brushPositions := getBrushTilePositions()
-	squirtle.Position = brushPositions[rand.Intn(len(brushPositions))]
-
-	// Add Squirtle to the pokemons list
-	pokemons = append(pokemons, squirtle)
 
 }
 
@@ -547,7 +518,7 @@ func input_field() (string, error) {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	const maxInputChars = 20 
+	const maxInputChars = 20
 
 	var inputText string
 
@@ -734,4 +705,3 @@ func isBrushTile(x, y float32) bool {
 	// Return true if the tile is a brush tile
 	return srcMap[tileIndex] == "a"
 }
-
