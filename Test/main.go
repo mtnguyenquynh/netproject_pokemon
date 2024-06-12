@@ -3,10 +3,13 @@ package main
 import (
 	// "math/rand"
 	// "time"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	_ "image/png"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,8 +25,31 @@ import (
 // }
 
 type Pokemon struct {
-	Texture  rl.Texture2D
-	Position rl.Vector2
+	Index       string       `json:"index"`
+	Name        string       `json:"name"`
+	Exp         int          `json:"exp"`
+	HP          int          `json:"hp"`
+	Attack      int          `json:"attack"`
+	Defense     int          `json:"defense"`
+	SpAttack    int          `json:"sp_attack"`
+	SpDefense   int          `json:"sp_defense"`
+	Speed       int          `json:"speed"`
+	TotalEVs    int          `json:"total_evs"`
+	Type        []string     `json:"type"`
+	Description string       `json:"description"`
+	Height      string       `json:"height"`
+	Weight      string       `json:"weight"`
+	ImageURL    string       `json:"image_url"`
+	Level       int          `json:"level"`
+	AccumExp    int          `json:"accum_exp"`
+	Deployable  bool         `json:"deployable"`
+	Texture     rl.Texture2D `json:"-"`
+	Position    rl.Vector2   `json:"-"`
+}
+
+type Player struct {
+	Name        string    `json:"name"`
+	PokemonList []Pokemon `json:"pokemon_list"`
 }
 
 // type Player struct {
@@ -102,6 +128,7 @@ var (
 	playerSpeed float32 = 3
 
 	pokemons []*Pokemon
+	player Player
 
 	musicPaused bool
 	music       rl.Music
@@ -153,7 +180,15 @@ func drawScene() {
 	}
 
 	for _, pokemon := range pokemons {
-		rl.DrawTexturePro(pokemon.Texture, tileSrc, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 12, 12), rl.NewVector2(48, 48), 0, rl.White)
+		if pokemon == nil {
+			continue // Skip if the Pokémon is nil
+		}
+		if isBrushTile(pokemon.Position.X, pokemon.Position.Y) {
+			// Use the same tileSrc to draw Pokémon
+			tileSrc.X = 0
+			tileSrc.Y = 0
+			rl.DrawTexturePro(pokemon.Texture, tileSrc, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16), rl.NewVector2(8, 8), 0, rl.White)
+		}
 	}
 
 	rl.DrawTexturePro(playerSpire, playerSrc, playerDest, rl.NewVector2(playerDest.Width, playerDest.Height), 0, rl.White)
@@ -185,31 +220,100 @@ func input() {
 	}
 }
 
+// func update() {
+// 	running = !rl.WindowShouldClose()
+
+// 	playerSrc.X = playerSrc.Width * float32(playerFrame)
+
+// 	if playerMoving {
+// 		if playerUp {
+// 			playerDest.Y -= playerSpeed
+// 		}
+// 		if playerDown {
+// 			playerDest.Y += playerSpeed
+// 		}
+// 		if playerLeft {
+// 			playerDest.X -= playerSpeed
+// 		}
+// 		if playerRight {
+// 			playerDest.X += playerSpeed
+// 		}
+// 		if frameCount%8 == 1 {
+// 			playerFrame++
+// 		}
+// 		// playerSrc.X = playerSrc.Width * float32(playerFrame)
+// 	} else if frameCount%45 == 1 {
+// 		playerFrame++
+// 	}
+
+// 	frameCount++
+// 	if playerFrame > 3 {
+// 		playerFrame = 0
+// 	}
+// 	if !playerMoving && playerFrame > 1 {
+// 		playerFrame = 0
+// 	}
+
+// 	playerSrc.Y = playerSrc.Height * float32(playerDir)
+
+// 	rl.UpdateMusicStream(music)
+// 	if musicPaused {
+// 		rl.PauseMusicStream(music)
+// 	} else {
+// 		rl.ResumeMusicStream(music)
+// 	}
+
+// 	cam.Target = rl.NewVector2(float32(playerDest.X-(playerDest.Width/2)), float32(playerDest.Y-(playerDest.Height/2)))
+
+// 	playerMoving = false
+// 	playerUp, playerDown, playerRight, playerLeft = false, false, false, false
+// }
+
 func update() {
 	running = !rl.WindowShouldClose()
 
 	playerSrc.X = playerSrc.Width * float32(playerFrame)
 
+	newPlayerDest := playerDest
+
 	if playerMoving {
 		if playerUp {
-			playerDest.Y -= playerSpeed
+			newPlayerDest.Y -= playerSpeed
 		}
 		if playerDown {
-			playerDest.Y += playerSpeed
+			newPlayerDest.Y += playerSpeed
 		}
 		if playerLeft {
-			playerDest.X -= playerSpeed
+			newPlayerDest.X -= playerSpeed
 		}
 		if playerRight {
-			playerDest.X += playerSpeed
+			newPlayerDest.X += playerSpeed
 		}
+
 		if frameCount%8 == 1 {
 			playerFrame++
 		}
-		// playerSrc.X = playerSrc.Width * float32(playerFrame)
 	} else if frameCount%45 == 1 {
 		playerFrame++
 	}
+
+	// Check if the new position is valid (on grass tile)
+	if isGrassTile(newPlayerDest.X, newPlayerDest.Y) {
+		playerDest = newPlayerDest
+	}
+
+    for i, pokemon := range pokemons {
+        if pokemon == nil {
+            continue
+        }
+
+        if rl.CheckCollisionRecs(playerDest, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16)) {
+            player.PokemonList = append(player.PokemonList, *pokemon)
+            pokemons[i] = nil
+			fmt.Println(player)
+			savePlayer(player)
+        }
+    }
 
 	frameCount++
 	if playerFrame > 3 {
@@ -287,9 +391,27 @@ func loadMap(mapFile string) {
 }
 
 func init() {
+	playerName, err := input_field()
+	if err != nil {
+		// Thoát chương trình nếu không nhập tên người chơi
+		fmt.Println("Input field closed. Exiting...")
+		os.Exit(1)
+	}
+
+	// Cập nhật tên người chơi trong player
+	player.Name = playerName
+
 	rl.InitWindow(screenWidth, screenHeight, "Pokémon Game")
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(60)
+
+
+	// fmt.Print("Enter your name: ")
+	// var playerName string
+	// fmt.Scanln(&playerName)
+	// fmt.Println("Hello,", playerName)
+
+	// player.Name = playerName
 
 	grassSprite = rl.LoadTexture("res/Tilesets/Grass.png")
 	hillSprite = rl.LoadTexture("res/Tilesets/Hills.png")
@@ -302,17 +424,10 @@ func init() {
 
 	url := "https://archives.bulbagarden.net/media/upload/thumb/f/fb/0001Bulbasaur.png/70px-0001Bulbasaur.png"
 	pokemonTexture, err := downloadTexture(url)
-	//pokemonTexture, err := rl.LoadImageFromTexture(rl.LoadImageFromMemoryBase64(pokemonImageBase64))
 	if err != nil {
 		fmt.Println("Error loading pokemon texture:", err)
 		os.Exit(1)
 	}
-
-	// Create a Pokémon object with the loaded texture
-	pokemons = append(pokemons, &Pokemon{
-		Texture:  pokemonTexture,
-		Position: rl.NewVector2(100, 100), // Adjust the position as needed
-	})
 
 	tileDest = rl.NewRectangle(0, 0, 16, 16)
 	tileSrc = rl.NewRectangle(0, 0, 16, 16)
@@ -333,6 +448,46 @@ func init() {
 	cam.Zoom = 3
 	loadMap("three.map")
 
+	// Spawn Pokémon at valid positions
+	brushPositions := getBrushTilePositions()
+	pokemons = append(pokemons, spawnPokemon(pokemonTexture, brushPositions))
+
+
+	squirtleTexture, err := downloadTexture("https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png")
+	if err != nil {
+		fmt.Println("Error loading squirtle texture:", err)
+		os.Exit(1)
+	}
+	// Create a new Pokémon object for Squirtle
+	squirtle := &Pokemon{
+		Index:       "7",
+		Name:        "Squirtle",
+		Exp:         63,
+		HP:          44,
+		Attack:      48,
+		Defense:     65,
+		SpAttack:    50,
+		SpDefense:   64,
+		Speed:       43,
+		TotalEVs:    314,
+		Type:        []string{"water"},
+		Description: "It shelters itself in its shell then strikes back with spouts of water at every opportunity.",
+		Height:      "0.5 m",
+		Weight:      "9 kg",
+		ImageURL:    "https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png",
+		Level:       0,
+		AccumExp:    0,
+		Deployable:  false,
+		Texture:     squirtleTexture,
+	}
+
+	// Spawn Squirtle at a valid position
+	brushPositions = getBrushTilePositions()
+	squirtle.Position = brushPositions[rand.Intn(len(brushPositions))]
+
+	// Add Squirtle to the pokemons list
+	pokemons = append(pokemons, squirtle)
+
 }
 
 func quit() {
@@ -344,12 +499,162 @@ func quit() {
 }
 
 func main() {
+
 	for running {
 		input()
 		update()
 		render()
 	}
 	quit()
+}
+
+
+func input_field() (string, error) {
+	rl.InitWindow(800, 450, "Text Input Example")
+	defer rl.CloseWindow()
+	rl.SetTargetFPS(60)
+
+	const maxInputChars = 20 
+
+	var inputText string
+
+	for !rl.WindowShouldClose() {
+		if rl.IsKeyPressed(rl.KeyBackspace) && len(inputText) > 0 {
+			inputText = inputText[:len(inputText)-1]
+		} else {
+			key := rl.GetCharPressed()
+			if key >= 32 && key <= 126 && len(inputText) < maxInputChars {
+				inputText += string(rune(key))
+			}
+		}
+
+		if rl.IsKeyPressed(rl.KeyEnter) && len(inputText) > 0 {
+			return inputText, nil
+		}
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RayWhite)
+
+		rl.DrawRectangle(10, 50, 400, 40, rl.LightGray)
+		rl.DrawRectangleLines(10, 50, 400, 40, rl.Black)
+		rl.DrawText("Enter Text: "+inputText, 20, 60, 20, rl.DarkGray)
+		rl.DrawText("Type to input text. Backspace to delete. Press Enter to save.", 10, 10, 20, rl.DarkGray)
+
+		rl.EndDrawing()
+	}
+
+	// Trả về lỗi nếu cửa sổ đã đóng mà không nhập tên
+	return "", errors.New("Input field closed without entering a name")
+}
+
+// func savePlayer(player Player) {
+// 	// Encode player data into JSON format
+// 	playerJSON, err := json.MarshalIndent(player, "", "    ")
+// 	if err != nil {
+// 		fmt.Println("Error encoding player data:", err)
+// 		return
+// 	}
+
+// 	// Write JSON data to file
+// 	file, err := os.Create("player.json")
+// 	if err != nil {
+// 		fmt.Println("Error creating player.json:", err)
+// 		return
+// 	}
+// 	defer file.Close()
+
+// 	_, err = file.Write(playerJSON)
+// 	if err != nil {
+// 		fmt.Println("Error writing to player.json:", err)
+// 		return
+// 	}
+
+// 	fmt.Println("Player data saved to player.json")
+// }
+
+func savePlayer(player Player) {
+	// Read existing player data from file
+	file, err := os.OpenFile("player.json", os.O_RDWR, 0644)
+	if err != nil {
+		fmt.Println("Error opening player.json:", err)
+		return
+	}
+	defer file.Close()
+
+	// Decode existing player data from JSON
+	var existingPlayers []Player
+	err = json.NewDecoder(file).Decode(&existingPlayers)
+	if err != nil {
+		fmt.Println("Error decoding player data:", err)
+		return
+	}
+
+	// Update existing player data or append new player data
+	found := false
+	for i, p := range existingPlayers {
+		if p.Name == player.Name {
+			existingPlayers[i] = player
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		existingPlayers = append(existingPlayers, player)
+	}
+
+	// Encode updated player data into JSON format
+	playerJSON, err := json.MarshalIndent(existingPlayers, "", "    ")
+	if err != nil {
+		fmt.Println("Error encoding player data:", err)
+		return
+	}
+
+	// Seek to the beginning of the file to overwrite existing data
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Println("Error seeking player.json:", err)
+		return
+	}
+
+	// Write updated JSON data back to the file
+	_, err = file.Write(playerJSON)
+	if err != nil {
+		fmt.Println("Error writing to player.json:", err)
+		return
+	}
+
+	// Truncate the file to remove any remaining data
+	err = file.Truncate(int64(len(playerJSON)))
+	if err != nil {
+		fmt.Println("Error truncating player.json:", err)
+		return
+	}
+
+	fmt.Println("Player data updated in player.json")
+}
+
+func getBrushTilePositions() []rl.Vector2 {
+	positions := []rl.Vector2{}
+	for i := 0; i < len(tileMap); i++ {
+		if srcMap[i] == "a" {
+			tileX := (i % mapW) * int(tileDest.Width)
+			tileY := (i / mapW) * int(tileDest.Height)
+			positions = append(positions, rl.NewVector2(float32(tileX), float32(tileY)))
+		}
+	}
+	fmt.Println(positions)
+	return positions
+}
+func spawnPokemon(texture rl.Texture2D, positions []rl.Vector2) *Pokemon {
+	if len(positions) == 0 {
+		return nil
+	}
+	index := rand.Intn(len(positions))
+	position := positions[index]
+	return &Pokemon{
+		Texture:  texture,
+		Position: position,
+	}
 }
 
 func downloadTexture(url string) (rl.Texture2D, error) {
@@ -365,60 +670,35 @@ func downloadTexture(url string) (rl.Texture2D, error) {
 
 	return texture, nil
 }
+func isGrassTile(x, y float32) bool {
+	// Calculate the tile index
+	tileX := int(x / tileDest.Width)
+	tileY := int(y / tileDest.Height)
+	tileIndex := tileY*mapW + tileX
 
+	// Check if the tileIndex is within the bounds of the tileMap
+	if tileIndex < 0 || tileIndex >= len(tileMap) {
+		return false
+	}
+	if tileMap[tileIndex] == 12 || tileMap[tileIndex] == 2 {
+		return false
+	}
 
-// func main() {
-//     rand.Seed(time.Now().UnixNano())
+	// Return true if the tile is a grass tile
+	return srcMap[tileIndex] == "g" || srcMap[tileIndex] == "a"
+}
+func isBrushTile(x, y float32) bool {
+	// Calculate the tile index
+	tileX := int(x / tileDest.Width)
+	tileY := int(y / tileDest.Height)
+	tileIndex := tileY*mapW + tileX
 
-//     // Initialize game world
-//     world := NewGameWorld()
+	// Check if the tileIndex is within the bounds of the tileMap
+	if tileIndex < 0 || tileIndex >= len(tileMap) {
+		return false
+	}
 
-//     // Initialize Raylib
-//     rl.InitWindow(screenWidth, screenHeight, "Pokémon Game")
-// 	rl.SetExitKey(0)
-//     defer rl.CloseWindow()
-//     rl.SetTargetFPS(60)
+	// Return true if the tile is a brush tile
+	return srcMap[tileIndex] == "a"
+}
 
-//     // Add a player
-//     player := &Player{
-//         Name:     "Ash",
-//         Position: rl.Vector2{X: screenWidth / 2, Y: screenHeight / 2},
-//     }
-//     world.AddPlayer(player)
-
-//     // Spawn initial Pokémons
-//     for i := 0; i < 10; i++ {
-//         world.SpawnPokemon()
-//     }
-
-//     // Main game loop
-//     for !rl.WindowShouldClose() {
-//         // Update game world
-//         if rl.IsKeyDown(rl.KeyRight) {
-//             world.MovePlayer(player, 5, 0)
-//         }
-//         if rl.IsKeyDown(rl.KeyLeft) {
-//             world.MovePlayer(player, -5, 0)
-//         }
-//         if rl.IsKeyDown(rl.KeyUp) {
-//             world.MovePlayer(player, 0, -5)
-//         }
-//         if rl.IsKeyDown(rl.KeyDown) {
-//             world.MovePlayer(player, 0, 5)
-//         }
-
-//         // Draw
-//         rl.BeginDrawing()
-//         rl.ClearBackground(bkgColor)
-
-//         // Draw player
-//         rl.DrawCircleV(player.Position, 20, rl.Blue)
-
-//         // Draw Pokémon
-//         for _, pokemon := range world.Pokemons {
-//             rl.DrawCircleV(pokemon.Position, 10, rl.Green)
-//         }
-
-//         rl.EndDrawing()
-//     }
-// }
