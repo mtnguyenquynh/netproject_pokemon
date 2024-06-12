@@ -422,13 +422,6 @@ func init() {
 
 	brushSprite = rl.LoadTexture("res/Objects/Basic_Grass_Biom_things.png")
 
-	url := "https://archives.bulbagarden.net/media/upload/thumb/f/fb/0001Bulbasaur.png/70px-0001Bulbasaur.png"
-	pokemonTexture, err := downloadTexture(url)
-	if err != nil {
-		fmt.Println("Error loading pokemon texture:", err)
-		os.Exit(1)
-	}
-
 	tileDest = rl.NewRectangle(0, 0, 16, 16)
 	tileSrc = rl.NewRectangle(0, 0, 16, 16)
 
@@ -448,9 +441,8 @@ func init() {
 	cam.Zoom = 3
 	loadMap("three.map")
 
-	// Spawn Pokémon at valid positions
-	brushPositions := getBrushTilePositions()
-	pokemons = append(pokemons, spawnPokemon(pokemonTexture, brushPositions))
+	spawnPokemonsOnMap()
+
 
 
 	squirtleTexture, err := downloadTexture("https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png")
@@ -482,7 +474,7 @@ func init() {
 	}
 
 	// Spawn Squirtle at a valid position
-	brushPositions = getBrushTilePositions()
+	brushPositions := getBrushTilePositions()
 	squirtle.Position = brushPositions[rand.Intn(len(brushPositions))]
 
 	// Add Squirtle to the pokemons list
@@ -508,6 +500,47 @@ func main() {
 	quit()
 }
 
+func spawnPokemonsOnMap() {
+	selectedPokemons := randomPokemonsFromFile()
+
+	for _, pokemon := range selectedPokemons {
+		texture, err := downloadTexture(pokemon.ImageURL)
+		if err != nil {
+			fmt.Println("Error loading pokemon texture:", err)
+			os.Exit(1)
+		}
+		pokemon.Texture = texture
+
+		brushPositions := getBrushTilePositions()
+		pokemon.Position = brushPositions[rand.Intn(len(brushPositions))]
+
+		pokemons = append(pokemons, pokemon)
+	}
+}
+
+func randomPokemonsFromFile() []*Pokemon {
+	var allPokemons []*Pokemon
+	file, err := ioutil.ReadFile("pokedex.json")
+	if err != nil {
+		fmt.Println("Error reading pokedex.json:", err)
+		os.Exit(1)
+	}
+
+	err = json.Unmarshal(file, &allPokemons)
+	if err != nil {
+		fmt.Println("Error unmarshalling pokedex.json:", err)
+		os.Exit(1)
+	}
+
+	rand.Shuffle(len(allPokemons), func(i, j int) { allPokemons[i], allPokemons[j] = allPokemons[j], allPokemons[i] })
+
+	selectedPokemons := make([]*Pokemon, 3)
+	for i := 0; i < 3; i++ {
+		selectedPokemons[i] = allPokemons[i]
+	}
+
+	return selectedPokemons
+}
 
 func input_field() (string, error) {
 	rl.InitWindow(800, 450, "Text Input Example")

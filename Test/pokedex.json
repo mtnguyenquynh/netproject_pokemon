@@ -1,62 +1,9 @@
 [
     {
-        "index": "1",
-        "name": "Bulbasaur",
-        "hp": 45,
-        "attack": 49,
-        "defense": 49,
-        "sp_attack": 65,
-        "sp_defense": 65,
-        "speed": 45,
-        "total_evs": 318,
-        "type": [
-            "grass",
-            "poison"
-        ],
-        "description": "For some time after its birth, it grows by gaining nourishment from the seed on its back.",
-        "height": "0.7 m",
-        "weight": "6.9 kg"
-    },
-    {
-        "index": "2",
-        "name": "Ivysaur",
-        "hp": 60,
-        "attack": 62,
-        "defense": 63,
-        "sp_attack": 80,
-        "sp_defense": 80,
-        "speed": 60,
-        "total_evs": 405,
-        "type": [
-            "grass",
-            "poison"
-        ],
-        "description": "When the bud on its back starts swelling, a sweet aroma wafts to indicate the flowers coming bloom.",
-        "height": "1 m",
-        "weight": "13 kg"
-    },
-    {
-        "index": "3",
-        "name": "Venusaur",
-        "hp": 80,
-        "attack": 82,
-        "defense": 83,
-        "sp_attack": 100,
-        "sp_defense": 100,
-        "speed": 80,
-        "total_evs": 525,
-        "type": [
-            "grass",
-            "poison"
-        ],
-        "description": "After a rainy day, the flower on its back smells stronger. The scent attracts other Pokémon.",
-        "height": "2 m",
-        "weight": "100 kg"
-    },
-    {
         "index": "4",
         "name": "Charmander",
-        "hp": 39,
+        "exp": 251,
+        "hp": 5,
         "attack": 52,
         "defense": 43,
         "sp_attack": 60,
@@ -68,109 +15,54 @@
         ],
         "description": "The fire on the tip of its tail is a measure of its life. If healthy, its tail burns intensely.",
         "height": "0.6 m",
-        "weight": "8.5 kg"
+        "weight": "8.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/2/27/0004Charmander.png/70px-0004Charmander.png",
+        "level": 0,
+        "accum_exp": 0,
+        "deployable": true
     },
     {
-        "index": "5",
-        "name": "Charmeleon",
-        "hp": 58,
-        "attack": 64,
-        "defense": 58,
-        "sp_attack": 80,
-        "sp_defense": 65,
-        "speed": 80,
-        "total_evs": 405,
+        "index": "2",
+        "name": "Charmander",
+        "exp": 251,
+        "hp": 5,
+        "attack": 52,
+        "defense": 43,
+        "sp_attack": 60,
+        "sp_defense": 50,
+        "speed": 65,
+        "total_evs": 309,
         "type": [
             "fire"
         ],
-        "description": "In the rocky mountains where Charmeleon live, their fiery tails shine at night like stars.",
-        "height": "1.1 m",
-        "weight": "19 kg"
+        "description": "The fire on the tip of its tail is a measure of its life. If healthy, its tail burns intensely.",
+        "height": "0.6 m",
+        "weight": "8.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/2/27/0004Charmander.png/70px-0004Charmander.png",
+        "level": 0,
+        "accum_exp": 0,
+        "deployable": true
     },
     {
-        "index": "6",
-        "name": "Charizard",
-        "hp": 78,
-        "attack": 84,
-        "defense": 78,
-        "sp_attack": 109,
-        "sp_defense": 85,
-        "speed": 100,
-        "total_evs": 534,
+        "index": "3",
+        "name": "Charmander",
+        "exp": 251,
+        "hp": 5,
+        "attack": 52,
+        "defense": 43,
+        "sp_attack": 60,
+        "sp_defense": 50,
+        "speed": 65,
+        "total_evs": 309,
         "type": [
-            "fire",
-            "flying"
+            "fire"
         ],
-        "description": "It is said that Charizards fire burns hotter if it has experienced harsh battles.",
-        "height": "1.7 m",
-        "weight": "90.5 kg"
-    },
-    {
-        "index": "7",
-        "name": "Squirtle",
-        "hp": 44,
-        "attack": 48,
-        "defense": 65,
-        "sp_attack": 50,
-        "sp_defense": 64,
-        "speed": 43,
-        "total_evs": 314,
-        "type": [
-            "water"
-        ],
-        "description": "It shelters itself in its shell then strikes back with spouts of water at every opportunity.",
-        "height": "0.5 m",
-        "weight": "9 kg"
-    },
-    {
-        "index": "8",
-        "name": "Wartortle",
-        "hp": 59,
-        "attack": 63,
-        "defense": 80,
-        "sp_attack": 65,
-        "sp_defense": 80,
-        "speed": 58,
-        "total_evs": 405,
-        "type": [
-            "water"
-        ],
-        "description": "It is said to live 10,000 years. Its furry tail is popular as a symbol of longevity.",
-        "height": "1 m",
-        "weight": "22.5 kg"
-    },
-    {
-        "index": "9",
-        "name": "Blastoise",
-        "hp": 79,
-        "attack": 83,
-        "defense": 100,
-        "sp_attack": 85,
-        "sp_defense": 105,
-        "speed": 78,
-        "total_evs": 530,
-        "type": [
-            "water"
-        ],
-        "description": "The jets of water it spouts from the rocket cannons on its shell can punch through thick steel.",
-        "height": "1.6 m",
-        "weight": "85.5 kg"
-    },
-    {
-        "index": "10",
-        "name": "Caterpie",
-        "hp": 45,
-        "attack": 30,
-        "defense": 35,
-        "sp_attack": 20,
-        "sp_defense": 20,
-        "speed": 45,
-        "total_evs": 195,
-        "type": [
-            "bug"
-        ],
-        "description": "It releases a stench from its red antenna to repel enemies. It grows by molting repeatedly.",
-        "height": "0.3 m",
-        "weight": "2.9 kg"
+        "description": "The fire on the tip of its tail is a measure of its life. If healthy, its tail burns intensely.",
+        "height": "0.6 m",
+        "weight": "8.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/2/27/0004Charmander.png/70px-0004Charmander.png",
+        "level": 0,
+        "accum_exp": 0,
+        "deployable": true
     }
 ]
