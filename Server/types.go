@@ -22,6 +22,10 @@ type Pokemon struct {
 	Level       int      `json:"level"`
 	AccumExp    int      `json:"accum_exp"`
 	Deployable  bool     `json:"deployable"`
+	MoveList   [4]string
+	Fainted    bool
+	NonVolatileStatus string
+	VolatileStatus    string
 }
 
 type Player struct {
@@ -39,4 +43,21 @@ type Participant struct {
 type Message struct {
 	msg  string
 	conn net.Conn
+}
+
+var MoveList = map[string]Move{
+	"Strength":    {"Strength", "Normal", "atk", 80, 100, 0, "None"},
+	"Hyper Voice": {"Hyper Voice", "Normal", "spatk", 90, 100, 0, "None"},
+	// Add more moves as needed
+}
+
+// Move represents a Pokemon move
+type Move struct {
+	Name             string
+	MoveType         string
+	AtkType          string
+	Power            int
+	Accuracy         int
+	SecondEffectRate float64
+	SecondEffect     string
 }
