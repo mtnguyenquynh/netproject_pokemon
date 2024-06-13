@@ -8,6 +8,10 @@ import (
 	"net"
 	"os"
 	"sync"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
+
+		
 )
 
 // type Pokemon struct {
@@ -45,10 +49,12 @@ import (
 type Player struct {
 	Name        string    `json:"name"`
 	PokemonList []Pokemon `json:"pokemon_list"`
-	Position    struct {
-		X float32 `json:"x"`
-		Y float32 `json:"y"`
-	} `json:"position"`
+	// Position    struct {
+	// 	X float32 `json:"x"`
+	// 	Y float32 `json:"y"`
+	// } `json:"position"`
+	PlayerSrc   rl.Rectangle `json:"playerSrc"`
+	PlayerDest  rl.Rectangle `json:"playerDest"`
 }
 
 var (
@@ -239,7 +245,8 @@ func updatePlayerPosition(writer *bufio.Writer, playerData string) {
 	found := false
 	for i, player := range players {
 		if player.Name == updatedPlayer.Name {
-			players[i].Position = updatedPlayer.Position
+			players[i].PlayerSrc = updatedPlayer.PlayerSrc
+			players[i].PlayerDest = updatedPlayer.PlayerDest
 			found = true
 			break
 		}
@@ -257,8 +264,12 @@ func getAllPlayers(writer *bufio.Writer) {
 	playersMutex.Lock()
 	defer playersMutex.Unlock()
 
-	response, _ := json.Marshal(players)
-	fmt.Fprintln(writer, string(response))
+	response, err := json.Marshal(players)
+	if err != nil {
+		fmt.Fprintf(writer, "Error: %s\n", err)
+	} else {
+		fmt.Fprintln(writer, string(response))
+	}
 	writer.Flush()
 }
 

@@ -6,6 +6,8 @@ import (
     "encoding/json"
     "fmt"
     "os"
+
+    rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 var WinMessages = []string{"That was excellent. Truly, an outstanding battle. You gave the support your Pokémon needed to maximize their power. And you guided them with certainty to secure victory. You have both passion and calculating coolness. Together, you and your Pokémon can overcome any challenge that may come your way. Those are the impressions I got from our battle. I'm glad I got to take part in the crowning of Sinnoh's new Champion! Come with me. We'll take the lift."}   // win messages
@@ -118,7 +120,6 @@ var MoveList = map[string]Move{
 type PokemonData struct {
     PokedexNumber  string   `json:"index"`
     Name           string   `json:"name"`
-    Exp            int      `json:"exp"`
     BaseHP         int      `json:"hp"`
     BaseAtk        int      `json:"attack"`
     BaseDef        int      `json:"defense"`
@@ -130,10 +131,17 @@ type PokemonData struct {
     Description    string   `json:"description"`
     Height         string   `json:"height"`
     Weight         string   `json:"weight"`
-    Level          int      `json:"level"`
-    AccumExp       int      `json:"accum_exp"`
-    Moves         []Move  `json:"moves"`
+    ImageURL    string       `json:"image_url"`
+    Exp            int      `json:"exp"`
+    Moves          []Move   `json:"moves"`
+    Texture     rl.Texture2D `json:"-"`
+	Position    rl.Vector2   `json:"-"`
 }
+
+// 	ImageURL    string       `json:"image_url"`
+
+
+
 
 type Pokemon struct {
     // Shared among individuals

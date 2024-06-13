@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
+	"github.com/PuerkitoBio/goquery"
 )
 
 // Pokemon represents the structure of a Pokemon entity.
@@ -159,9 +159,10 @@ func fetchIndividualPokemonData(ctx context.Context, url, name, index string) (P
 	return pokemon, nil
 }
 
-// fetchMoves fetches moves data for a Pokémon.
+// fetchMoves fetches moves data for a Pokémon from the given URL.
 func fetchMoves(ctx context.Context, url string) ([]Move, error) {
 	var html string
+	// Navigate to the URL and retrieve the HTML content of the page
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
 		chromedp.Sleep(5*time.Second), // Wait for the page to load completely
@@ -171,13 +172,18 @@ func fetchMoves(ctx context.Context, url string) ([]Move, error) {
 		return nil, fmt.Errorf("failed to load moves page: %v", err)
 	}
 
+	// Parse the HTML content using goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse moves page HTML: %v", err)
 	}
 
 	var moves []Move
+	// Iterate over the moves on the page and extract relevant information
 	doc.Find(".monster-moves .moves-row").Each(func(i int, s *goquery.Selection) {
+		if i >= 3 {
+			return // Break the loop after fetching 3 moves
+		}
 		move := Move{}
 		move.Name = strings.TrimSpace(s.Find("span").Eq(1).Text())
 		move.Type = strings.TrimSpace(s.Find(".monster-type").Text())
@@ -201,6 +207,7 @@ func fetchMoves(ctx context.Context, url string) ([]Move, error) {
 
 	return moves, nil
 }
+
 
 // getExpAndImageForPokemon fetches the experience (EXP) and image URL for a given Pokémon index from the Bulbapedia page.
 func getExpAndImageForPokemon(index string) (int, string, error) {

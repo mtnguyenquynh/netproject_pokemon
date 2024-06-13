@@ -16,6 +16,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -23,24 +24,25 @@ import (
 )
 
 type Pokemon struct {
-	Index       string       `json:"index"`
-	Name        string       `json:"name"`
-	HP          int          `json:"hp"`
-	Attack      int          `json:"attack"`
-	Defense     int          `json:"defense"`
-	SpAttack    int          `json:"sp_attack"`
-	SpDefense   int          `json:"sp_defense"`
-	Speed       int          `json:"speed"`
-	TotalEVs    int          `json:"total_evs"`
-	Type        []string     `json:"type"`
-	Description string       `json:"description"`
-	Height      string       `json:"height"`
-	Weight      string       `json:"weight"`
-	ImageURL    string       `json:"image_url"`
-	Exp         int          `json:"exp"`
-	Moves       []Move       `json:"moves"`
-	Texture     rl.Texture2D `json:"-"`
-	Position    rl.Vector2   `json:"-"`
+	PokedexNumber string       `json:"index"`
+	Name          string       `json:"name"`
+	BaseHP        int          `json:"hp"`
+	BaseAtk       int          `json:"attack"`
+	BaseDef       int          `json:"defense"`
+	BaseSpAtk     int          `json:"sp_attack"`
+	BaseSpDef     int          `json:"sp_defense"`
+	BaseSpeed     int          `json:"speed"`
+	TotalEVs      int          `json:"total_evs"`
+	Type          [2]string    `json:"type"`
+	Description   string       `json:"description"`
+	Height        string       `json:"height"`
+	Weight        string       `json:"weight"`
+	ImageURL      string       `json:"image_url"`
+	Exp           int          `json:"exp"`
+	Moves         []Move       `json:"moves"`
+	Texture       rl.Texture2D `json:"-"`
+	Position      rl.Vector2   `json:"-"`
+	SpawnTime     time.Time    `json:"-"`
 }
 
 // Move represents the structure of a move.
@@ -60,12 +62,10 @@ type Move struct {
 // }
 
 type Player struct {
-	Name        string    `json:"name"`
-	PokemonList []Pokemon `json:"pokemon_list"`
-	Position    struct {
-		X float32 `json:"x"`
-		Y float32 `json:"y"`
-	} `json:"position"`
+	Name        string       `json:"name"`
+	PokemonList []Pokemon    `json:"pokemon_list"`
+	PlayerSrc   rl.Rectangle `json:"playerSrc"`
+	PlayerDest  rl.Rectangle `json:"playerDest"`
 }
 
 const (
@@ -106,7 +106,8 @@ var (
 
 	playerSpeed float32 = 3
 
-	pokemons     []*Pokemon
+	pokemons     []Pokemon
+	pokemons_all []*Pokemon
 	player       Player
 	otherPlayers []Player
 
@@ -115,9 +116,10 @@ var (
 	musicPaused bool
 	music       rl.Music
 
-	cam  rl.Camera2D
-	conn net.Conn
+	cam            rl.Camera2D
+	conn           net.Conn
 	updateInterval = 1 * time.Second
+	mu           sync.Mutex
 )
 
 func drawScene() {
@@ -164,13 +166,8 @@ func drawScene() {
 	}
 
 	for _, pokemon := range pokemons {
-		if pokemon == nil {
-			continue // Skip if the Pokémon is nil
-		}
 		if isBrushTile(pokemon.Position.X, pokemon.Position.Y) {
-			// Use the same tileSrc to draw Pokémon
-			tileSrc.X = 0
-			tileSrc.Y = 0
+			// Assuming tileSrc and other necessary variables are properly set
 			rl.DrawTexturePro(pokemon.Texture, tileSrc, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16), rl.NewVector2(8, 8), 0, rl.White)
 		}
 	}
@@ -179,8 +176,13 @@ func drawScene() {
 
 	// Draw other players with semi-transparency
 	for _, otherPlayer := range otherPlayers {
-		otherPlayerDest := rl.NewRectangle(otherPlayer.Position.X, otherPlayer.Position.Y, playerDest.Width, playerDest.Height)
-		rl.DrawTexturePro(playerSpire, playerSrc, otherPlayerDest, rl.Vector2{}, 0, rl.NewColor(255, 255, 255, 128)) // Semi-transparent white
+		if otherPlayer.Name != player.Name {
+			otherPlayerDest := rl.NewRectangle(otherPlayer.PlayerDest.X, otherPlayer.PlayerDest.Y, playerDest.Width, playerDest.Height)
+			rl.DrawTexturePro(playerSpire, otherPlayer.PlayerSrc, otherPlayerDest, rl.NewVector2(otherPlayerDest.Width, otherPlayerDest.Height), 0, rl.NewColor(255, 255, 255, 128))
+			
+		}
+
+		
 	}
 }
 
@@ -242,16 +244,33 @@ func update() {
 		playerDest = newPlayerDest
 	}
 
-	for i, pokemon := range pokemons {
+	for i := 0; i < len(pokemons); i++ {
+		pokemon := &pokemons[i] // Use pointer to the current pokemon
+	
 		if pokemon == nil {
-			continue
+			continue // Skip if the Pokémon is nil (though this should be rare in a normal slice)
 		}
-
-		if rl.CheckCollisionRecs(playerDest, rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16)) {
+	
+		pokemonRect := rl.NewRectangle(pokemon.Position.X, pokemon.Position.Y, 16, 16)
+	
+		if rl.CheckCollisionRecs(playerDest, pokemonRect) {
 			player.PokemonList = append(player.PokemonList, *pokemon)
-			pokemons[i] = nil
+			// Remove the captured pokemon from pokemons slice
+			pokemons = append(pokemons[:i], pokemons[i+1:]...)
+			i-- // Decrement i because the next pokemon is shifted left
 			//fmt.Println(player)
 			savePlayer(player)
+		}
+
+		for _, otherPlayer := range otherPlayers {
+			if otherPlayer.Name != player.Name {
+				otherPlayerDest := rl.NewRectangle(otherPlayer.PlayerDest.X, otherPlayer.PlayerDest.Y, playerDest.Width, playerDest.Height)				
+				if rl.CheckCollisionRecs(playerDest, otherPlayerDest) && isHouseTile(otherPlayerDest.X, otherPlayerDest.Y){
+					battle()
+				}
+			}
+	
+			
 		}
 	}
 
@@ -278,13 +297,74 @@ func update() {
 	playerUp, playerDown, playerRight, playerLeft = false, false, false, false
 
 	if time.Now().Second()%int(updateInterval.Seconds()) == 0 {
-		player.Position.X = playerDest.X
-		player.Position.Y = playerDest.Y
+		player.PlayerSrc = playerSrc
+		player.PlayerDest = playerDest
 		updatePlayerPosition(player)
 
 		// Fetch positions of other players from the server
-		otherPlayers, _ = fetchAllPlayers()
+		fetchAllPlayers()
 	}
+
+	if time.Now().Second() == 0 || len(pokemons) == 0 {
+		spawnNewPokemon()
+	}
+
+	// Despawn Pokémon after 5 minutes
+	despawnOldPokemon()
+}
+
+func spawnNewPokemon() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	// fetchPokemonData()
+
+	if len(brushTiles) == 0 || len(pokemons_all) == 0 {
+		return // No brush tiles or pokemons available
+	}
+
+	// Randomly pick a brush tile and a Pokémon
+	randomIndex := rand.Intn(len(brushTiles))
+	pokemonIndex := rand.Intn(len(pokemons_all))
+	if pokemons_all[pokemonIndex] == nil {
+		fmt.Println("Selected nil Pokémon, skipping spawn.")
+		return // Skip if selected Pokémon is nil
+	}
+
+	newPokemon := *pokemons_all[pokemonIndex]
+	newPokemon.Position = brushTiles[randomIndex]
+	newPokemon.SpawnTime = time.Now()
+
+	var err error
+	newPokemon.Texture, err = downloadTexture(newPokemon.ImageURL)
+	if err != nil {
+		fmt.Println("Error downloading texture:", err)
+		return
+	}
+
+	pokemons = append(pokemons, newPokemon)
+}
+
+func despawnOldPokemon() {
+    currentTime := time.Now()
+    // Create a new slice to store active Pokemon
+    var activePokemons []Pokemon
+
+    // Iterate over the pokemons slice
+    for _, pokemon := range pokemons {
+        // Check if the pokemon is active
+        if pokemon.IsActive(currentTime) {
+            activePokemons = append(activePokemons, pokemon)
+        }
+    }
+
+    // Update the pokemons slice to contain only activePokemons
+    pokemons = activePokemons
+}
+
+// IsActive checks if a pokemon is active based on current time and spawn time
+func (p Pokemon) IsActive(currentTime time.Time) bool {
+    return !p.SpawnTime.IsZero() && currentTime.Sub(p.SpawnTime) <= 5*time.Minute
 }
 
 func render() {
@@ -298,46 +378,6 @@ func render() {
 	rl.EndDrawing()
 }
 
-// func loadMap(mapFile string) {
-// 	file, err := ioutil.ReadFile(mapFile)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		os.Exit(1)
-// 	}
-// 	remNewLines := strings.ReplaceAll(string(file), "\r", "")
-// 	remNewLines = strings.ReplaceAll(remNewLines, "\n", " ")
-// 	sliced := strings.Split(remNewLines, " ")
-// 	mapW = -1
-// 	mapH = -1
-// 	for i := 0; i < len(sliced); i++ {
-// 		s, _ := strconv.ParseInt(sliced[i], 10, 64)
-// 		// if err != nil {
-// 		// 	fmt.Printf("Error parsing string '%s' at index %d: %v\n", sliced[i], i, err)
-// 		// 	continue
-// 		// }
-// 		m := int(s)
-// 		if mapW == -1 {
-// 			mapW = m
-// 		} else if mapH == -1 {
-// 			mapH = m
-// 		} else if i < mapW*mapH+2 {
-// 			tileMap = append(tileMap, m)
-// 		} else {
-// 			srcMap = append(srcMap, sliced[i])
-// 		}
-// 	}
-// 	fmt.Println("Parsed tileMap:", tileMap)
-// 	fmt.Println("src tileMap:", srcMap)
-// 	if len(tileMap) > mapW*mapH {
-// 		tileMap = tileMap[:len(tileMap)-1]
-// 	}
-
-//		// mapW = 5
-//		// mapH = 5
-//		// for i := 0; i<(mapW*mapH); i++ {
-//		// 	tileMap = append(tileMap, 13)
-//		// }
-//	}
 func loadMap(fileName string) {
 	file, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -366,33 +406,6 @@ func loadMap(fileName string) {
 		tileMap = tileMap[:len(tileMap)-1]
 	}
 
-	// Remove new lines and split data
-	// remNewLines := strings.ReplaceAll(string(data), "\r", "")
-	// remNewLines = strings.ReplaceAll(remNewLines, "\n", " ")
-	// mapData := strings.Split(remNewLines, " ")
-
-	// mapW, _ = strconv.Atoi(mapData[0])
-	// mapH, _ = strconv.Atoi(mapData[1])
-
-	// tileMap = make([]int, mapW*mapH)
-	// srcMap = make([]string, mapW*mapH)
-
-	// index := 2
-	// for i := 0; i < mapW*mapH; i++ {
-	// 	if index < len(mapData) {
-	// 		tileMap[i], _ = strconv.Atoi(mapData[index])
-	// 	}
-	// 	index++
-	// 	if index < len(mapData) {
-	// 		srcMap[i] = mapData[index]
-	// 	}
-	// 	index++
-	// }
-
-	// tileDest.Width = float32(grassSprite.Width) / float32(mapW)
-	// tileDest.Height = float32(grassSprite.Height) / float32(mapH)
-
-	// Identify brush tiles
 	brushTiles = nil
 	for i := 0; i < len(tileMap); i++ {
 		if srcMap[i] == "a" { // 'a' represents brush tiles
@@ -445,14 +458,17 @@ func init() {
 	playerSrc = rl.NewRectangle(0, 0, 48, 48)
 	playerDest = rl.NewRectangle(200, 200, 60, 60)
 
-
 	player, err = fetchPlayer(playerName)
 	if err != nil {
 		fmt.Println("Error fetching player data:", err)
 		return
 	}
 
-	pokemons, err = fetchPokemonData()
+	// Initialize playerSrc and playerDest
+	// playerSrc = player.PlayerSrc
+	// playerDest = player.PlayerDest
+
+	pokemons_all, err = fetchPokemonData()
 	if err != nil {
 		fmt.Println("Error fetching pokemons:", err)
 		return
@@ -494,6 +510,17 @@ func main() {
 	quit()
 }
 
+func battle(){
+	writer := bufio.NewWriter(conn)
+
+	fmt.Fprintf(writer, "BATTLE\n")
+	writer.Flush()
+	fmt.Fprintf(writer, "%s\n", name)
+	writer.Flush()
+
+	return nil
+}
+
 func updatePlayerPosition(player Player) error {
 	writer := bufio.NewWriter(conn)
 
@@ -511,63 +538,32 @@ func updatePlayerPosition(player Player) error {
 }
 
 func updatePokemonPositions() {
-	rand.Shuffle(len(pokemons), func(i, j int) {
-		pokemons[i], pokemons[j] = pokemons[j], pokemons[i]
+	// Shuffle the pokemons_all slice
+	rand.Shuffle(len(pokemons_all), func(i, j int) {
+		pokemons_all[i], pokemons_all[j] = pokemons_all[j], pokemons_all[i]
 	})
+
 	// Ensure we only place a maximum of three Pokémon
-	maxPokemons := 3
-	if len(pokemons) > maxPokemons {
-		pokemons = pokemons[:maxPokemons]
+	maxPokemons := 2
+	if len(pokemons_all) > maxPokemons {
+		pokemons = make([]Pokemon, maxPokemons) // Create a new slice of Pokemon structs
+		for i := 0; i < maxPokemons; i++ {
+			pokemons[i] = *pokemons_all[i] // Dereference and copy each Pokemon struct
+		}
+	} else {
+		pokemons = make([]Pokemon, len(pokemons_all)) // Create a new slice of Pokemon structs
+		for i := 0; i < len(pokemons_all); i++ {
+			pokemons[i] = *pokemons_all[i] // Dereference and copy each Pokemon struct
+		}
 	}
 
+	// Assign positions to the pokemons slice
 	for i := 0; i < len(pokemons); i++ {
-		// Randomly pick a brush tile
+		// Randomly pick a brush tile index
 		randomIndex := rand.Intn(len(brushTiles))
 		pokemons[i].Position = brushTiles[randomIndex]
 	}
 }
-
-// func spawnPokemonsOnMap() {
-// 	selectedPokemons := randomPokemonsFromFile()
-
-// 	for _, pokemon := range selectedPokemons {
-// 		texture, err := downloadTexture(pokemon.ImageURL)
-// 		if err != nil {
-// 			fmt.Println("Error loading pokemon texture:", err)
-// 			os.Exit(1)
-// 		}
-// 		pokemon.Texture = texture
-
-// 		brushPositions := getBrushTilePositions()
-// 		pokemon.Position = brushPositions[rand.Intn(len(brushPositions))]
-
-// 		pokemons = append(pokemons, pokemon)
-// 	}
-// }
-
-// func randomPokemonsFromFile() []*Pokemon {
-// 	var allPokemons []*Pokemon
-// 	file, err := ioutil.ReadFile("pokedex.json")
-// 	if err != nil {
-// 		fmt.Println("Error reading pokedex.json:", err)
-// 		os.Exit(1)
-// 	}
-
-// 	err = json.Unmarshal(file, &allPokemons)
-// 	if err != nil {
-// 		fmt.Println("Error unmarshalling pokedex.json:", err)
-// 		os.Exit(1)
-// 	}
-
-// 	rand.Shuffle(len(allPokemons), func(i, j int) { allPokemons[i], allPokemons[j] = allPokemons[j], allPokemons[i] })
-
-// 	selectedPokemons := make([]*Pokemon, 3)
-// 	for i := 0; i < 3; i++ {
-// 		selectedPokemons[i] = allPokemons[i]
-// 	}
-
-// 	return selectedPokemons
-// }
 
 func input_field() (string, error) {
 	rl.InitWindow(800, 450, "Text Input Example")
@@ -630,11 +626,11 @@ func fetchPlayer(name string) (Player, error) {
 
 	// Send GET_PLAYER command
 	fmt.Fprintf(writer, "GET_PLAYER\n")
-	
+
 	writer.Flush()
 	// Send player's name
 	fmt.Fprintf(writer, "%s\n", name)
-	
+
 	writer.Flush()
 
 	// Read server response
@@ -669,11 +665,10 @@ func fetchPokemonData() ([]*Pokemon, error) {
 		return nil, err
 	}
 
-
 	return pokemons, nil
 }
 
-func fetchAllPlayers() ([]Player, error) {
+func fetchAllPlayers() {
 	writer := bufio.NewWriter(conn)
 	reader := bufio.NewReader(conn)
 
@@ -682,106 +677,13 @@ func fetchAllPlayers() ([]Player, error) {
 
 	response, err := reader.ReadString('\n')
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
 	}
 
-	var players []Player
-	err = json.Unmarshal([]byte(response), &players)
-	if err != nil {
-		return nil, err
-	}
+	json.Unmarshal([]byte(response), &otherPlayers)
 
-	return players, nil
 }
 
-// func savePlayer(player Player) {
-// 	// Read existing player data from file
-// 	file, err := os.OpenFile("player.json", os.O_RDWR, 0644)
-// 	if err != nil {
-// 		fmt.Println("Error opening player.json:", err)
-// 		return
-// 	}
-// 	defer file.Close()
-
-// 	// Decode existing player data from JSON
-// 	var existingPlayers []Player
-// 	err = json.NewDecoder(file).Decode(&existingPlayers)
-// 	if err != nil {
-// 		fmt.Println("Error decoding player data:", err)
-// 		return
-// 	}
-
-// 	// Update existing player data or append new player data
-// 	found := false
-// 	for i, p := range existingPlayers {
-// 		if p.Name == player.Name {
-// 			existingPlayers[i] = player
-// 			found = true
-// 			break
-// 		}
-// 	}
-
-// 	if !found {
-// 		existingPlayers = append(existingPlayers, player)
-// 	}
-
-// 	// Encode updated player data into JSON format
-// 	playerJSON, err := json.MarshalIndent(existingPlayers, "", "    ")
-// 	if err != nil {
-// 		fmt.Println("Error encoding player data:", err)
-// 		return
-// 	}
-
-// 	// Seek to the beginning of the file to overwrite existing data
-// 	_, err = file.Seek(0, 0)
-// 	if err != nil {
-// 		fmt.Println("Error seeking player.json:", err)
-// 		return
-// 	}
-
-// 	// Write updated JSON data back to the file
-// 	_, err = file.Write(playerJSON)
-// 	if err != nil {
-// 		fmt.Println("Error writing to player.json:", err)
-// 		return
-// 	}
-
-// 	// Truncate the file to remove any remaining data
-// 	err = file.Truncate(int64(len(playerJSON)))
-// 	if err != nil {
-// 		fmt.Println("Error truncating player.json:", err)
-// 		return
-// 	}
-
-// 	fmt.Println("Player data updated in player.json")
-// }
-
-// func getBrushTilePositions() []rl.Vector2 {
-// 	positions := []rl.Vector2{}
-// 	for i := 0; i < len(tileMap); i++ {
-// 		if srcMap[i] == "a" {
-// 			tileX := (i % mapW) * int(tileDest.Width)
-// 			tileY := (i / mapW) * int(tileDest.Height)
-// 			positions = append(positions, rl.NewVector2(float32(tileX), float32(tileY)))
-// 		}
-// 	}
-// 	fmt.Println(positions)
-// 	return positions
-// }
-
-// func spawnPokemon(texture rl.Texture2D, positions []rl.Vector2) *Pokemon {
-// 	if len(positions) == 0 {
-// 		return nil
-// 	}
-// 	index := rand.Intn(len(positions))
-// 	position := positions[index]
-// 	return &Pokemon{
-// 		Texture:  texture,
-// 		Position: position,
-// 	}
-// }
-
-// delete later
 func downloadTexture(url string) (rl.Texture2D, error) {
 	resp, _ := http.Get(url)
 	defer resp.Body.Close()
@@ -796,10 +698,10 @@ func downloadTexture(url string) (rl.Texture2D, error) {
 	return texture, nil
 }
 func loadPokemonImages() {
-	for i := 0; i < len(pokemons); i++ {
-		pokemons[i].Texture, _ = downloadTexture(pokemons[i].ImageURL)
-		if pokemons[i].Texture.ID <= 0 {
-			fmt.Println("Error loading pokemon texture", pokemons[i].ImageURL)
+	for i := 0; i < len(pokemons_all); i++ {
+		pokemons_all[i].Texture, _ = downloadTexture(pokemons_all[i].ImageURL)
+		if pokemons_all[i].Texture.ID <= 0 {
+			fmt.Println("Error loading pokemon texture", pokemons_all[i].ImageURL)
 		}
 	}
 }
@@ -816,6 +718,9 @@ func isGrassTile(x, y float32) bool {
 	}
 	if tileMap[tileIndex] == 12 || tileMap[tileIndex] == 2 {
 		return false
+	}
+	if srcMap[tileIndex] == "h" && (tileMap[tileIndex] == 11 || tileMap[tileIndex] == 16) {
+		return true
 	}
 
 	// Return true if the tile is a grass tile
@@ -835,4 +740,19 @@ func isBrushTile(x, y float32) bool {
 
 	// Return true if the tile is a brush tile
 	return srcMap[tileIndex] == "a"
+}
+
+func isHouseTile(x, y float32) bool {
+	// Calculate the tile index
+	tileX := int(x / tileDest.Width)
+	tileY := int(y / tileDest.Height)
+	tileIndex := tileY*mapW + tileX
+
+	// Check if the tileIndex is within the bounds of the tileMap
+	if tileIndex < 0 || tileIndex >= len(tileMap) {
+		return false
+	}
+
+	// Return true if the tile is a brush tile
+	return srcMap[tileIndex] == "h" && tileMap[tileIndex] == 16
 }
