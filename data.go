@@ -6,6 +6,7 @@ import (
     "encoding/json"
     "fmt"
     "os"
+ 
 )
 
 var WinMessages = []string{"That was excellent. Truly, an outstanding battle. You gave the support your Pokémon needed to maximize their power. And you guided them with certainty to secure victory. You have both passion and calculating coolness. Together, you and your Pokémon can overcome any challenge that may come your way. Those are the impressions I got from our battle. I'm glad I got to take part in the crowning of Sinnoh's new Champion! Come with me. We'll take the lift."}   // win messages
@@ -20,6 +21,7 @@ type UserInput struct {
     isAI bool
     gameOver bool
 }
+
 
 // List of non-volatile status conditions
 var StatusList = map[string]bool{
@@ -166,6 +168,8 @@ type Move struct {
 var Moves map[string]Move
 
 var pokemonList map[string]PokemonData
+
+
 
 func InitData()  {
     pokemonList = make(map[string]PokemonData)

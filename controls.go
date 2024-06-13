@@ -239,31 +239,6 @@ func BuildTeam(input *UserInput, makeStrong bool) *UserInput {
 	return input
 }
 
-// builds a random team for you
-/* func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
-	var team []*Pokemon
-	var printTeam []string
-
-	// put all pokemon in a list for random choosing
-	var allPokemon []string
-	for p := range PokemonList {
-		if p == "MissingNo" {
-			continue
-		}
-		allPokemon = append(allPokemon, p)
-	}
-
-	// randomly choose 6 pokemon
-	for i := 0; i < 6; i++ {
-		pokemon := allPokemon[rand.Intn(len(allPokemon))]
-		team = append(team, NewPokemon(pokemon, makeStrong))
-		printTeam = append(printTeam, pokemon)
-	}
-
-	fmt.Println("Your team is:", printTeam, "\n")
-	input.team = team
-	return input
-} */
 func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	// fmt.Println(pokemonList)
 	// rand.Seed(time.Now().UnixNano()) // Seed the random number generator
@@ -298,3 +273,5 @@ func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	input.team = team
 	return input
 }
+
+
