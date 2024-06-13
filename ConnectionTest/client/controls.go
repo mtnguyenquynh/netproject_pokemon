@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"bufio"
+	"os"
 	"strconv"
 	"strings"
 	
@@ -51,6 +51,7 @@ func ChooseAction(input *UserInput) *UserInput {
 }
 
 func ChooseMove(input *UserInput) *UserInput {
+	fmt.Println(input.activePokemon)
 	pokemon := input.activePokemon
 	fmt.Println("Type a number and hit ENTER to choose a move:")
 	for i := 0; i < 4; i++ {
@@ -147,36 +148,13 @@ func SwitchPokemon(input *UserInput) *UserInput {
 	return input
 }
 
-// Function to choose name based on UserInput
-func ChooseName(input *UserInput, writer *bufio.Writer) {
-    fmt.Fprintf(writer, "Hello, %s! Welcome to the battle.\n", input.username)
-    writer.Flush()
-
-}
-
-
-// Print all Pokémon function
-func PrintAllPokemon(writer *bufio.Writer) {
-    var s string
-    var i int
-    for name := range pokemonList {
-        if name == "MissingNo" {
-            continue
-        }
-        if i < 5 {
-			s = s + padString(name, 12)
-            i++
-        } else {
-            fmt.Fprintf(writer, "%s\n", s)
-            s = padString(name, 12)
-            i = 1
-        }
-    }
-    if len(s) > 0 {
-        fmt.Fprintf(writer, "%s\n", s)
-    }
-    fmt.Fprintf(writer, "\n")
-    writer.Flush()
+func ChooseName(input *UserInput) *UserInput {
+	var mv string
+	fmt.Println("What is your name?\n")
+	fmt.Scanln(&mv)
+	fmt.Println()
+	input.username = mv
+	return input
 }
 
 // helper function to pad string for formatting
@@ -187,60 +165,79 @@ func padString(str string, n int) string {
 	return str + strings.Repeat(" ", n-len(str))
 }
 
-
-
-
-
-// choice to either build a team or use a random one
-func ChooseTeam(input *UserInput, choiceStr string, reader *bufio.Reader, writer *bufio.Writer) *UserInput {
-    if choiceStr == "1" {
-        input = BuildTeam(input, reader, writer, false)
-    } else if choiceStr == "2" {
-        input = RandomTeam(input, false)
-    } else {
-        fmt.Println("Invalid input received from client.")
-    }
-    return input
+// helper function to print all available pokemon
+func PrintAllPokemon() {
+	var s string
+	var i int
+	for name := range pokemonList {
+		if name == "MissingNo" {
+			continue
+		} else if i < 5 {
+			s = s + padString(name, 12)
+			i++
+		} else {
+			fmt.Println(s)
+			s = padString(name, 12)
+			i = 1
+		}
+	}
+	if len(s) > 0 {
+		fmt.Println(s)
+	}
+	fmt.Println()
+	os.Stdout.Sync()
 }
 
-
+// choice to either build a team or use a random one
+func ChooseTeam(input *UserInput) *UserInput {
+	fmt.Println("Type a number and press ENTER to choose an option")
+	fmt.Println("(1) Build a team")
+	fmt.Println("(2) Use a random team\n")
+	var mv string
+	for {
+		fmt.Scanln(&mv)
+		fmt.Println()
+		if mv == "1" {
+			input = BuildTeam(input, false)
+			break
+		} else if mv == "2" {	
+			input = RandomTeam(input, false)
+			break
+		} else {
+			fmt.Println("[[ INVALID INPUT ]] Try again")
+			continue
+		}
+	}
+	return input
+}
 
 // menu to choose your team
-func BuildTeam(input *UserInput, reader *bufio.Reader, writer *bufio.Writer, makeStrong bool) *UserInput {
-    var team []*Pokemon
-    var printTeam []string
-
-
-    for i := 0; i < 6; i++ {
-        for {
-			PrintAllPokemon(writer)
+func BuildTeam(input *UserInput, makeStrong bool) *UserInput {
+	fmt.Println("[[ CHOOSE YOUR TEAM ]]\n")
+	var mv string
+	var team []*Pokemon
+	var printTeam []string
+	for i := 0; i < 6; i++ {
+		for {
+			PrintAllPokemon()
+			fmt.Println("Your team so far:", printTeam)
+			fmt.Println("Choose your (", i+1, ") pokemon\n")
+			fmt.Scanln(&mv)
 			fmt.Println()
-            fmt.Fprintf(writer, "Choose your (%d) pokemon:\n", i+1)
-            writer.Flush()
-
-            mv, err := reader.ReadString('\n')
-            if err != nil {
-                fmt.Println("Error reading Pokémon choice:", err.Error())
-                continue
-            }
-            mv = strings.TrimSpace(mv)
-
-            _, isValid := pokemonList[mv]
-            if !isValid {
-                fmt.Fprintf(writer, "[[ INVALID INPUT ]] Try again\n")
-                writer.Flush()
-                continue
-            } else {
-                team = append(team, NewPokemon(mv, makeStrong))
-                printTeam = append(printTeam, mv)
-                break
-            }
-        }
-    }
-    fmt.Fprintf(writer, "Your team is: %s\n\n", strings.Join(printTeam, ", "))
-    writer.Flush()
-    input.team = team
-    return input
+			_, isValid := pokemonList[mv]
+			if !isValid {
+				fmt.Println("[[ INVALID INPUT ]] Try again")
+				continue
+			} else {
+				team = append(team, NewPokemon(mv, makeStrong))
+				printTeam = append(printTeam, mv)
+				break
+			}
+		}
+	}
+	fmt.Println("Your team is:", printTeam, "\n")
+	input.team = team
+	return input
 }
 
 func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
@@ -277,3 +274,5 @@ func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	input.team = team
 	return input
 }
+
+

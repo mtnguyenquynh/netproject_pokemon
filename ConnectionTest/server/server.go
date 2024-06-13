@@ -2,24 +2,99 @@ package main
 
 import (
     "bufio"
+    "encoding/json"
     "fmt"
     "net"
+    "os"
     "strings"
 )
 
+var pokemonList map[string]PokemonData
+
+type Pokemon struct {
+    PokemonData
+    level             int
+    hp                int
+    atk               int
+    def               int
+    spatk             int
+    spdef             int
+    speed             int
+    nonVolatileStatus string
+    volatileStatus    string
+    fainted           bool
+}
+
+type PokemonData struct {
+    PokedexNumber string   `json:"index"`
+    Name          string   `json:"name"`
+    Exp           int      `json:"exp"`
+    BaseHP        int      `json:"hp"`
+    BaseAtk       int      `json:"attack"`
+    BaseDef       int      `json:"defense"`
+    BaseSpAtk     int      `json:"sp_attack"`
+    BaseSpDef     int      `json:"sp_defense"`
+    BaseSpeed     int      `json:"speed"`
+    TotalEVs      int      `json:"total_evs"`
+    Type          [2]string `json:"type"`
+    Description   string   `json:"description"`
+    Height        string   `json:"height"`
+    Weight        string   `json:"weight"`
+    Level         int      `json:"level"`
+    AccumExp      int      `json:"accum_exp"`
+    Moves         []Move   `json:"moves"`
+}
+
+type Move struct {
+    MoveName        string  `json:"name"`
+    MoveType        string  `json:"type"`
+    AtkType         string  `json:"atk_type"`
+    Power           int     `json:"power"`
+    Accuracy        int     `json:"accuracy"`
+    SecondEffectRate float64 `json:"pp"`
+    SecondEffect    string  `json:"description"`
+}
+
+func InitData() {
+    pokemonList = make(map[string]PokemonData)
+    file, err := os.Open("./pokedex.json")
+    if err != nil {
+        fmt.Println("Error opening pokedex file:", err)
+        os.Exit(1)
+    }
+    defer file.Close()
+
+    decoder := json.NewDecoder(file)
+    pokedex := []PokemonData{}
+    if err := decoder.Decode(&pokedex); err != nil {
+        fmt.Println("Error decoding pokedex data:", err)
+        os.Exit(1)
+    }
+
+    for _, pokemon := range pokedex {
+        pokemonList[pokemon.Name] = pokemon
+    }
+
+    fmt.Println("PokemonList loaded")
+
+    for _, pokemon := range pokemonList {
+        fmt.Println(pokemon.Name)
+    }
+}
 
 func main() {
-    fmt.Println("Server is listening on port 8080...")
+    InitData()
 
-    ln, err := net.Listen("tcp", ":8080")
+    listener, err := net.Listen("tcp", "localhost:8080")
     if err != nil {
-        fmt.Println("Error listening:", err.Error())
+        fmt.Println("Error starting server:", err.Error())
         return
     }
-    defer ln.Close()
+    defer listener.Close()
+    fmt.Println("Server is listening on localhost:8080")
 
     for {
-        conn, err := ln.Accept()
+        conn, err := listener.Accept()
         if err != nil {
             fmt.Println("Error accepting connection:", err.Error())
             continue
@@ -31,67 +106,37 @@ func main() {
 
 func handleConnection(conn net.Conn) {
     defer conn.Close()
-    InitData()
-
-
-    reader := bufio.NewReader(conn)
     writer := bufio.NewWriter(conn)
 
-    // Read client's name
-    fmt.Fprintf(writer, "What is your name?\n")
+    fmt.Fprintln(writer, "Welcome to the Pokémon Team Builder!")
     writer.Flush()
-    name, err := reader.ReadString('\n')
-    if err != nil {
-        fmt.Println("Error reading client's name:", err.Error())
-        return
+
+    sendPokemonList(writer)
+}
+
+func sendPokemonList(writer *bufio.Writer) {
+    var s string
+    var i int
+    for name := range pokemonList {
+        if i < 5 {
+            s += padString(name, 12)
+            i++
+        } else {
+            fmt.Fprintf(writer, "%s\n", s)
+            s = padString(name, 12)
+            i = 1
+        }
     }
-    name = strings.TrimSpace(name)
-
-    // Initialize user input
-    userInput := &UserInput{username: name}
-
-    // Choose name based on client's UserInput
-    ChooseName(userInput, writer)
-	fmt.Println(userInput)
-	fmt.Println("User", userInput.username, "has joined.")
-
-
-  // Prepare Cynthia's team (example with hardcoded values)
-    venusaur := NewPokemon("Venusaur", true)
-    charmeleon := NewPokemon("Charmeleon", true)
-    wartortle := NewPokemon("Wartortle", true)
-    blastoise := NewPokemon("Blastoise", true)
-    caterpie := NewPokemon("Caterpie", true)
-    bulbasaur := NewPokemon("Bulbasaur", true) 
-
-    cynthiasTeam := []*Pokemon{venusaur, charmeleon, wartortle, blastoise, caterpie, bulbasaur}
-
-    //Simulate battle with Cynthia
-    cynthiasInput := &UserInput{"Cynthia", "", venusaur, cynthiasTeam, "", true, false}
-
-    // Send team selection prompt
-    fmt.Fprintf(writer, "Type a number and press ENTER to choose an option\n")
+    if len(s) > 0 {
+        fmt.Fprintf(writer, "%s\n", s)
+    }
+    fmt.Fprintln(writer, "")
     writer.Flush()
-  // Receive team choice
-  choiceStr, err := reader.ReadString('\n')
-  if err != nil {
-      fmt.Println("Error reading choice:", err.Error())
-      return
-  }
-  choiceStr = strings.TrimSpace(choiceStr)
+}
 
-
-
-  // Process team choice
-ChooseTeam(userInput, choiceStr, reader, writer)
-
-
-
-
-    fmt.Fprintf(writer, "\n[[ BATTLE ]] Starting a battle\n")
-    writer.Flush()
-    Battle(userInput, cynthiasInput)
-
-    fmt.Fprintf(writer, "\nBattle concluded. Closing connection.\n")
-    writer.Flush()
+func padString(str string, n int) string {
+    if len(str) >= n {
+        return str
+    }
+    return str + strings.Repeat(" ", n-len(str))
 }
