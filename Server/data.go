@@ -24,7 +24,7 @@ type UserInput struct {
 // List of non-volatile status conditions
 var StatusList = map[string]bool{
     "PSN": true, // Poison
-    "FRZ": true, // Freeze
+    "FRZ": true, // Freeze  
     "BRN": true, // Burn
     "PRZ": true, // Paralysis
 }

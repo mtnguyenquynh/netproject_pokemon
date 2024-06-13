@@ -6,6 +6,7 @@ import (
 
 func main() {
 	// Initialize data from pokedex.json
+    //server
 	InitData()
 
 
@@ -18,7 +19,11 @@ func main() {
 
 	cynthiasTeam := []*Pokemon{venusaur, charmeleon, wartortle, blastoise, caterpie, bulbasaur}
 
+    // client 
+    // get name from the client 
 	myInput := &UserInput{"Ash", "", nil, nil, "", false, false}
+
+    //server
 	cynthiasInput := &UserInput{"Cynthia", "", venusaur, cynthiasTeam, "", true, false}
 
 	fmt.Println()

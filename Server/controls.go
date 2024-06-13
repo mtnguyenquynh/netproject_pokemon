@@ -147,6 +147,8 @@ func SwitchPokemon(input *UserInput) *UserInput {
 	return input
 }
 
+
+// client
 func ChooseName(input *UserInput) *UserInput {
 	var mv string
 	fmt.Println("What is your name?\n")
@@ -188,6 +190,7 @@ func PrintAllPokemon() {
 }
 
 // choice to either build a team or use a random one
+// client 
 func ChooseTeam(input *UserInput) *UserInput {
 	fmt.Println("Type a number and press ENTER to choose an option")
 	fmt.Println("(1) Build a team")
@@ -264,6 +267,8 @@ func BuildTeam(input *UserInput, makeStrong bool) *UserInput {
 	input.team = team
 	return input
 } */
+
+//server
 func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	// fmt.Println(pokemonList)
 	// rand.Seed(time.Now().UnixNano()) // Seed the random number generator
@@ -285,8 +290,6 @@ func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 		// fmt.Println(len(allPokemon))
 	
 		pokemon := allPokemon[rand.Intn(len(allPokemon))]
-
-
 
 		team = append(team, NewPokemon(pokemon, makeStrong))
 		printTeam = append(printTeam, pokemon)
