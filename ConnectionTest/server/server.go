@@ -80,8 +80,12 @@ func handleConnection(conn net.Conn) {
   }
   choiceStr = strings.TrimSpace(choiceStr)
 
+
+
   // Process team choice
-  ChooseTeam(userInput, choiceStr)
+ChooseTeam(userInput, choiceStr, reader, writer)
+
+
 
 
     fmt.Fprintf(writer, "\n[[ BATTLE ]] Starting a battle\n")
