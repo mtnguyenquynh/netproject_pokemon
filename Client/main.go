@@ -23,7 +23,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-type Pokemon struct {
+type PokemonData struct {
 	PokedexNumber string       `json:"index"`
 	Name          string       `json:"name"`
 	BaseHP        int          `json:"hp"`
@@ -47,13 +47,13 @@ type Pokemon struct {
 
 // Move represents the structure of a move.
 type Move struct {
-	Name        string  `json:"name"`
-	Type        string  `json:"type"`
-	AtkType     string  `json:"atk_type"`
-	Power       int     `json:"power"`
-	Accuracy    float64 `json:"accuracy"`
-	PP          float64 `json:"pp"`
-	Description string  `json:"description"`
+    MoveName            string  `json:"name"`
+    MoveType        string  `json:"type"`
+    AtkType         string  `json:"atk_type"`
+    Power           int     `json:"power"`
+    Accuracy        int     `json:"accuracy"`
+    SecondEffectRate float64 `json:"pp"`
+    SecondEffect    string  `json:"description"`
 }
 
 // type Player struct {
@@ -266,7 +266,7 @@ func update() {
 			if otherPlayer.Name != player.Name {
 				otherPlayerDest := rl.NewRectangle(otherPlayer.PlayerDest.X, otherPlayer.PlayerDest.Y, playerDest.Width, playerDest.Height)				
 				if rl.CheckCollisionRecs(playerDest, otherPlayerDest) && isHouseTile(otherPlayerDest.X, otherPlayerDest.Y){
-					battle()
+					battle(player.Name)
 				}
 			}
 	
@@ -510,16 +510,7 @@ func main() {
 	quit()
 }
 
-func battle(){
-	writer := bufio.NewWriter(conn)
 
-	fmt.Fprintf(writer, "BATTLE\n")
-	writer.Flush()
-	fmt.Fprintf(writer, "%s\n", name)
-	writer.Flush()
-
-	return nil
-}
 
 func updatePlayerPosition(player Player) error {
 	writer := bufio.NewWriter(conn)

@@ -1,4 +1,6 @@
+package main
 
+/* 
 
 package main
 
@@ -6,10 +8,7 @@ import (
     "encoding/json"
     "fmt"
     "os"
-
-    rl "github.com/gen2brain/raylib-go/raylib"
-
-
+ 
 )
 
 var WinMessages = []string{"That was excellent. Truly, an outstanding battle. You gave the support your Pokémon needed to maximize their power. And you guided them with certainty to secure victory. You have both passion and calculating coolness. Together, you and your Pokémon can overcome any challenge that may come your way. Those are the impressions I got from our battle. I'm glad I got to take part in the crowning of Sinnoh's new Champion! Come with me. We'll take the lift."}   // win messages
@@ -29,7 +28,7 @@ type UserInput struct {
 // List of non-volatile status conditions
 var StatusList = map[string]bool{
     "PSN": true, // Poison
-    "FRZ": true, // Freeze  
+    "FRZ": true, // Freeze
     "BRN": true, // Burn
     "PRZ": true, // Paralysis
 }
@@ -119,33 +118,21 @@ var MoveList = map[string]Move{
     "Flash Cannon": Move{"Flash Cannon", "Steel", "spatk", 80, 100, 0.1, "spdef"},
 }
 
-// Define structs to hold the data from pokedex.json
-type PokemonData struct {
-    PokedexNumber  string   `json:"index"`
-    Name           string   `json:"name"`
-    BaseHP         int      `json:"hp"`
-    BaseAtk        int      `json:"attack"`
-    BaseDef        int      `json:"defense"`
-    BaseSpAtk      int      `json:"sp_attack"`
-    BaseSpDef      int      `json:"sp_defense"`
-    BaseSpeed      int      `json:"speed"`
-    TotalEVs       int      `json:"total_evs"`
-    Type           [2]string `json:"type"`
-    Description    string   `json:"description"`
-    Height         string   `json:"height"`
-    Weight         string   `json:"weight"`
-    ImageURL    string       `json:"image_url"`
-    Exp            int      `json:"exp"`
-    Moves          []Move   `json:"moves"`
-    Texture     rl.Texture2D `json:"-"`
-	Position    rl.Vector2   `json:"-"`
+
+// Move represents the structure of a move.
+type Move struct {
+    MoveName            string  `json:"name"`
+    MoveType        string  `json:"type"`
+    AtkType         string  `json:"atk_type"`
+    Power           int     `json:"power"`
+    Accuracy        int     `json:"accuracy"`
+    SecondEffectRate float64 `json:"pp"`
+    SecondEffect    string  `json:"description"`
 }
 
-// 	ImageURL    string       `json:"image_url"`
+var Moves map[string]Move
 
-
-
-
+var pokemonList map[string]PokemonData
 type Pokemon struct {
     // Shared among individuals
     PokemonData
@@ -162,28 +149,31 @@ type Pokemon struct {
     volatileStatus    string
     fainted           bool
 }
-
-// Move represents the structure of a move.
-type Move struct {
-    MoveName            string  `json:"name"`
-    MoveType        string  `json:"type"`
-    AtkType         string  `json:"atk_type"`
-    Power           int     `json:"power"`
-    Accuracy        int     `json:"accuracy"`
-    SecondEffectRate float64 `json:"pp"`
-    SecondEffect    string  `json:"description"`
+// Define structs to hold the data from pokedex.json
+type PokemonData struct {
+    PokedexNumber  string   `json:"index"`
+    Name           string   `json:"name"`
+    Exp            int      `json:"exp"`
+    BaseHP         int      `json:"hp"`
+    BaseAtk        int      `json:"attack"`
+    BaseDef        int      `json:"defense"`
+    BaseSpAtk      int      `json:"sp_attack"`
+    BaseSpDef      int      `json:"sp_defense"`
+    BaseSpeed      int      `json:"speed"`
+    TotalEVs       int      `json:"total_evs"`
+    Type           [2]string `json:"type"`
+    Description    string   `json:"description"`
+    Height         string   `json:"height"`
+    Weight         string   `json:"weight"`
+    Level          int      `json:"level"`
+    AccumExp       int      `json:"accum_exp"`
+    Moves          []Move   `json:"moves"`
 }
-
-var Moves map[string]Move
-
-var pokemonList map[string]PokemonData
-
-
 
 func InitData()  {
     pokemonList = make(map[string]PokemonData)
 	// Read data from pokedex.json and populate PokemonList
-	file, err := os.Open("./crawler/pokedex.json")
+	file, err := os.Open("./pokedex.json")
 	if err != nil {
 		// return nil, err
         fmt.Println(err)
@@ -217,3 +207,4 @@ func InitData()  {
 	// return pokemonList, nil
 }
 
+ */
