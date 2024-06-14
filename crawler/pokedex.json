@@ -96,5 +96,391 @@
                 "description": "Inflicts regular damage."
             }
         ]
+    },
+    {
+        "index": "3",
+        "name": "Venusaur",
+        "hp": 80,
+        "attack": 82,
+        "defense": 83,
+        "sp_attack": 100,
+        "sp_defense": 100,
+        "speed": 80,
+        "total_evs": 525,
+        "type": [
+            "grass",
+            "poison"
+        ],
+        "description": "After a rainy day, the flower on its back smells stronger. The scent attracts other Pokémon.",
+        "height": "2 m",
+        "weight": "100 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/6/6b/0003Venusaur.png/70px-0003Venusaur.png",
+        "exp": 263,
+        "moves": [
+            {
+                "name": "Leech seed",
+                "type": "grass",
+                "atk_type": "spatk",
+                "power": 0,
+                "accuracy": 90,
+                "pp": 1,
+                "description": "Plants a seed on the target that drains 1/8 of its max HP at the end of every turn and heals the user for the amount taken.  Has no effect on grass Pokémon.  The seed remains until the target leaves the field.\n\nThe user takes damage instead of being healed if the target has liquid-ooze.\n\nrapid-spin will remove this effect.\n\nThis effect is passed on by baton-pass."
+            },
+            {
+                "name": "Growl",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 0,
+                "accuracy": 100,
+                "pp": 4,
+                "description": "Lowers the target's Attack by one stage."
+            },
+            {
+                "name": "Tackle",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 50,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            }
+        ]
+    },
+    {
+        "index": "4",
+        "name": "Charmander",
+        "hp": 39,
+        "attack": 52,
+        "defense": 43,
+        "sp_attack": 60,
+        "sp_defense": 50,
+        "speed": 65,
+        "total_evs": 309,
+        "type": [
+            "fire"
+        ],
+        "description": "The fire on the tip of its tail is a measure of its life. If healthy, its tail burns intensely.",
+        "height": "0.6 m",
+        "weight": "8.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/2/27/0004Charmander.png/70px-0004Charmander.png",
+        "exp": 62,
+        "moves": [
+            {
+                "name": "Growl",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 0,
+                "accuracy": 100,
+                "pp": 4,
+                "description": "Lowers the target's Attack by one stage."
+            },
+            {
+                "name": "Scratch",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            },
+            {
+                "name": "Ember",
+                "type": "fire",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 2.5,
+                "description": "Inflicts regular damage.  Has a 10% chance to burn the target."
+            }
+        ]
+    },
+    {
+        "index": "5",
+        "name": "Charmeleon",
+        "hp": 58,
+        "attack": 64,
+        "defense": 58,
+        "sp_attack": 80,
+        "sp_defense": 65,
+        "speed": 80,
+        "total_evs": 405,
+        "type": [
+            "fire"
+        ],
+        "description": "In the rocky mountains where Charmeleon live, their fiery tails shine at night like stars.",
+        "height": "1.1 m",
+        "weight": "19 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/0/05/0005Charmeleon.png/70px-0005Charmeleon.png",
+        "exp": 142,
+        "moves": [
+            {
+                "name": "Ember",
+                "type": "fire",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 2.5,
+                "description": "Inflicts regular damage.  Has a 10% chance to burn the target."
+            },
+            {
+                "name": "Growl",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 0,
+                "accuracy": 100,
+                "pp": 4,
+                "description": "Lowers the target's Attack by one stage."
+            },
+            {
+                "name": "Scratch",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            }
+        ]
+    },
+    {
+        "index": "6",
+        "name": "Charizard",
+        "hp": 78,
+        "attack": 84,
+        "defense": 78,
+        "sp_attack": 109,
+        "sp_defense": 85,
+        "speed": 100,
+        "total_evs": 534,
+        "type": [
+            "fire",
+            "flying"
+        ],
+        "description": "It is said that Charizards fire burns hotter if it has experienced harsh battles.",
+        "height": "1.7 m",
+        "weight": "90.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/3/38/0006Charizard.png/70px-0006Charizard.png",
+        "exp": 267,
+        "moves": [
+            {
+                "name": "Shadow claw",
+                "type": "ghost",
+                "atk_type": "spatk",
+                "power": 70,
+                "accuracy": 100,
+                "pp": 1.5,
+                "description": "Inflicts regular damage.  User's critical hit rate is one level higher when using this move."
+            },
+            {
+                "name": "Air slash",
+                "type": "flying",
+                "atk_type": "spatk",
+                "power": 75,
+                "accuracy": 95,
+                "pp": 1.5,
+                "description": "Inflicts regular damage.  Has a 30% chance to make the target flinch."
+            },
+            {
+                "name": "Heat wave",
+                "type": "fire",
+                "atk_type": "spatk",
+                "power": 95,
+                "accuracy": 90,
+                "pp": 1,
+                "description": "Inflicts regular damage.  Has a 10% chance to burn the target."
+            }
+        ]
+    },
+    {
+        "index": "7",
+        "name": "Squirtle",
+        "hp": 44,
+        "attack": 48,
+        "defense": 65,
+        "sp_attack": 50,
+        "sp_defense": 64,
+        "speed": 43,
+        "total_evs": 314,
+        "type": [
+            "water"
+        ],
+        "description": "It shelters itself in its shell then strikes back with spouts of water at every opportunity.",
+        "height": "0.5 m",
+        "weight": "9 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/5/54/0007Squirtle.png/70px-0007Squirtle.png",
+        "exp": 63,
+        "moves": [
+            {
+                "name": "Tail whip",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 0,
+                "accuracy": 100,
+                "pp": 3,
+                "description": "Lowers the target's Defense by one stage."
+            },
+            {
+                "name": "Tackle",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 50,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            },
+            {
+                "name": "Bubble",
+                "type": "water",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 3,
+                "description": "Inflicts regular damage.  Has a 10% chance to lower the target's Speed by one stage."
+            }
+        ]
+    },
+    {
+        "index": "8",
+        "name": "Wartortle",
+        "hp": 59,
+        "attack": 63,
+        "defense": 80,
+        "sp_attack": 65,
+        "sp_defense": 80,
+        "speed": 58,
+        "total_evs": 405,
+        "type": [
+            "water"
+        ],
+        "description": "It is said to live 10,000 years. Its furry tail is popular as a symbol of longevity.",
+        "height": "1 m",
+        "weight": "22.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/0/0f/0008Wartortle.png/70px-0008Wartortle.png",
+        "exp": 142,
+        "moves": [
+            {
+                "name": "Bubble",
+                "type": "water",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 3,
+                "description": "Inflicts regular damage.  Has a 10% chance to lower the target's Speed by one stage."
+            },
+            {
+                "name": "Tail whip",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 0,
+                "accuracy": 100,
+                "pp": 3,
+                "description": "Lowers the target's Defense by one stage."
+            },
+            {
+                "name": "Tackle",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 50,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            }
+        ]
+    },
+    {
+        "index": "9",
+        "name": "Blastoise",
+        "hp": 79,
+        "attack": 83,
+        "defense": 100,
+        "sp_attack": 85,
+        "sp_defense": 105,
+        "speed": 78,
+        "total_evs": 530,
+        "type": [
+            "water"
+        ],
+        "description": "The jets of water it spouts from the rocket cannons on its shell can punch through thick steel.",
+        "height": "1.6 m",
+        "weight": "85.5 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/0/0a/0009Blastoise.png/70px-0009Blastoise.png",
+        "exp": 265,
+        "moves": [
+            {
+                "name": "Flash cannon",
+                "type": "steel",
+                "atk_type": "spatk",
+                "power": 80,
+                "accuracy": 100,
+                "pp": 1,
+                "description": "Inflicts regular damage.  Has a 10% chance to lower the target's Special Defense by one stage."
+            },
+            {
+                "name": "Bubble",
+                "type": "water",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 3,
+                "description": "Inflicts regular damage.  Has a 10% chance to lower the target's Speed by one stage."
+            },
+            {
+                "name": "Water gun",
+                "type": "water",
+                "atk_type": "spatk",
+                "power": 40,
+                "accuracy": 100,
+                "pp": 2.5,
+                "description": "Inflicts regular damage."
+            }
+        ]
+    },
+    {
+        "index": "10",
+        "name": "Caterpie",
+        "hp": 45,
+        "attack": 30,
+        "defense": 35,
+        "sp_attack": 20,
+        "sp_defense": 20,
+        "speed": 45,
+        "total_evs": 195,
+        "type": [
+            "bug"
+        ],
+        "description": "It releases a stench from its red antenna to repel enemies. It grows by molting repeatedly.",
+        "height": "0.3 m",
+        "weight": "2.9 kg",
+        "image_url": "https://archives.bulbagarden.net/media/upload/thumb/5/5e/0010Caterpie.png/70px-0010Caterpie.png",
+        "exp": 39,
+        "moves": [
+            {
+                "name": "String shot",
+                "type": "bug",
+                "atk_type": "spatk",
+                "power": 0,
+                "accuracy": 95,
+                "pp": 4,
+                "description": "Lowers the target's Speed by one stage."
+            },
+            {
+                "name": "Tackle",
+                "type": "normal",
+                "atk_type": "atk",
+                "power": 50,
+                "accuracy": 100,
+                "pp": 3.5,
+                "description": "Inflicts regular damage."
+            },
+            {
+                "name": "Bug bite",
+                "type": "bug",
+                "atk_type": "spatk",
+                "power": 60,
+                "accuracy": 100,
+                "pp": 2,
+                "description": "Inflicts regular damage.  If the target is holding a berry, this move has double power, and the user takes the berry and uses it immediately.\n\nIf the target is holding a jaboca-berry or rowap-berry, the berry is still removed, but has no effect.\n\nIf this move is super effective and the target is holding a berry that can reduce this move's damage, it will do so, and will not be stolen."
+            }
+        ]
     }
 ]

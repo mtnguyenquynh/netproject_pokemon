@@ -1,15 +1,12 @@
-
-
-
- package main
+package main
 
 import (
-    "math"
-    "math/rand"
+	"math"
+	"math/rand"
 )
 
 // type multiplier function
-// Takes the attacker's move and the defending pokemon 
+// Takes the attacker's move and the defending pokemon
 // and calculates the type matchup damage multiplier
 func TypeMatch(mv *Move, target *Pokemon) (float64, string) {
     moveType := mv.MoveType   // attacking move's type
@@ -224,7 +221,7 @@ func DamageCalc(attacker *Pokemon, defender *Pokemon, move *Move) (int, []string
     basePower := move.Power
     multiplier, messages := DamageMultiplier(attacker, defender, move)
     damage := ((((2*float64(level)/5)+2)*float64(basePower)*(float64(attackStat)/float64(defenseStat))/50)+2)*multiplier
-    return int(math.Round(damage * multiplier)), messages
+        return int(math.Round(damage * multiplier)), messages
 }
 
 

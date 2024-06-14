@@ -6,7 +6,6 @@ import (
     "fmt"
     "net"
     "os"
-    "strings"
 )
 
 var pokemonList map[string]PokemonData
@@ -78,7 +77,7 @@ func InitData() {
     fmt.Println("PokemonList loaded")
 
     for _, pokemon := range pokemonList {
-        fmt.Println(pokemon.Name)
+        fmt.Println(pokemon)
     }
 }
 
@@ -115,28 +114,12 @@ func handleConnection(conn net.Conn) {
 }
 
 func sendPokemonList(writer *bufio.Writer) {
-    var s string
-    var i int
-    for name := range pokemonList {
-        if i < 5 {
-            s += padString(name, 12)
-            i++
-        } else {
-            fmt.Fprintf(writer, "%s\n", s)
-            s = padString(name, 12)
-            i = 1
-        }
+    pokemonListJSON, err := json.Marshal(pokemonList)
+    if err != nil {
+        fmt.Println("Error marshaling pokemonList:", err)
+        return
     }
-    if len(s) > 0 {
-        fmt.Fprintf(writer, "%s\n", s)
-    }
-    fmt.Fprintln(writer, "")
-    writer.Flush()
-}
 
-func padString(str string, n int) string {
-    if len(str) >= n {
-        return str
-    }
-    return str + strings.Repeat(" ", n-len(str))
+    writer.WriteString(string(pokemonListJSON) + "\n")
+    writer.Flush()
 }

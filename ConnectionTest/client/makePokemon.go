@@ -1,7 +1,7 @@
 
 
 package main
-
+/* 
 import (
     "math/rand"
 )
@@ -61,4 +61,4 @@ func NewPokemon(name string, makeStrong bool) *Pokemon {
     pokemon.fainted = false
 
     return &pokemon
-}
+} */

@@ -51,26 +51,35 @@ func ChooseAction(input *UserInput) *UserInput {
 }
 
 func ChooseMove(input *UserInput) *UserInput {
-	fmt.Println(input.activePokemon)
 	pokemon := input.activePokemon
 	fmt.Println("Type a number and hit ENTER to choose a move:")
-	for i := 0; i < 4; i++ {
+	
+	// Check if the pokemon has any moves
+	if len(pokemon.Moves) == 0 {
+		fmt.Println("[[ NO MOVES AVAILABLE ]]")
+		return input
+	}
+	
+	for i := 0; i < len(pokemon.Moves); i++ {
 		fmt.Printf("(%v) %v\n", i+1, pokemon.Moves[i].MoveName)
 	}
 	fmt.Println()
+
 	var mv string
 	for {
 		fmt.Scanln(&mv)
 		fmt.Println()
-		if mv == "1" || mv == "2" || mv == "3" || mv == "4" {
+		moveIdx, err := strconv.Atoi(mv)
+		if err == nil && moveIdx > 0 && moveIdx <= len(pokemon.Moves) {
+			input.move = pokemon.Moves[moveIdx-1].MoveName
 			break
 		}
 		fmt.Println("[[ INVALID INPUT ]] Try again\n")
 	}
-	moveIdx, _ := strconv.Atoi(mv)
-	input.move = pokemon.Moves[moveIdx-1].MoveName
+	
 	return input
 }
+
 
 // gets user stdin to decide which Pokemon to send out
 // (after previous one has fainted)
@@ -165,15 +174,16 @@ func padString(str string, n int) string {
 	return str + strings.Repeat(" ", n-len(str))
 }
 
-// helper function to print all available pokemon
+// helper function to print all available Pokémon names
 func PrintAllPokemon() {
 	var s string
 	var i int
-	for name := range pokemonList {
+	for _, data := range pokemonList {
+		name := data.Name
 		if name == "MissingNo" {
 			continue
 		} else if i < 5 {
-			s = s + padString(name, 12)
+			s += padString(name, 12)
 			i++
 		} else {
 			fmt.Println(s)
@@ -187,6 +197,7 @@ func PrintAllPokemon() {
 	fmt.Println()
 	os.Stdout.Sync()
 }
+
 
 // choice to either build a team or use a random one
 func ChooseTeam(input *UserInput) *UserInput {
