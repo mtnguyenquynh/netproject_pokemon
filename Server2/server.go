@@ -63,6 +63,8 @@ func InitData() {
     }
     defer file.Close()
 
+    
+
     decoder := json.NewDecoder(file)
     pokedex := []PokemonData{}
     if err := decoder.Decode(&pokedex); err != nil {
