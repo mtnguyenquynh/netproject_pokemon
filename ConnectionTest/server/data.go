@@ -1,4 +1,6 @@
+package main
 
+/* 
 
 package main
 
@@ -205,3 +207,4 @@ func InitData()  {
 	// return pokemonList, nil
 }
 
+ */

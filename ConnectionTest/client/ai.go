@@ -18,7 +18,7 @@ func ChooseMoveAI(aiInput *UserInput, userInput *UserInput) *UserInput {
     var chosenMove string
     for _, move := range aiInput.activePokemon.Moves {
         dmg, _ := DamageCalc(aiInput.activePokemon, userInput.activePokemon, &move)
-        if dmg > damage {
+        if dmg >= damage {
             damage = dmg
             chosenMove = move.MoveName
         }

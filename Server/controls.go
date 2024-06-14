@@ -53,7 +53,7 @@ func ChooseAction(input *UserInput) *UserInput {
 func ChooseMove(input *UserInput) *UserInput {
 	pokemon := input.activePokemon
 	fmt.Println("Type a number and hit ENTER to choose a move:")
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 3; i++ {
 		fmt.Printf("(%v) %v\n", i+1, pokemon.Moves[i].MoveName)
 	}
 	fmt.Println()
@@ -61,7 +61,7 @@ func ChooseMove(input *UserInput) *UserInput {
 	for {
 		fmt.Scanln(&mv)
 		fmt.Println()
-		if mv == "1" || mv == "2" || mv == "3" || mv == "4" {
+		if mv == "1" || mv == "2" || mv == "3"  {
 			break
 		}
 		fmt.Println("[[ INVALID INPUT ]] Try again\n")
@@ -267,8 +267,6 @@ func BuildTeam(input *UserInput, makeStrong bool) *UserInput {
 	input.team = team
 	return input
 } */
-
-//server
 func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	// fmt.Println(pokemonList)
 	// rand.Seed(time.Now().UnixNano()) // Seed the random number generator
@@ -301,3 +299,5 @@ func RandomTeam(input *UserInput, makeStrong bool) *UserInput {
 	input.team = team
 	return input
 }
+
+
